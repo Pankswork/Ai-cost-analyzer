@@ -1,0 +1,73 @@
+# Frontend Deployment — serves the built React app via Nginx
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: cost-detective
+  labels:
+    app: frontend
+    component: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        component: web
+    spec:
+      # Security context — run as non-root
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        fsGroup: 101
+
+      containers:
+        - name: frontend
+          image: frontend:latest
+          ports:
+            - containerPort: 80
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: "128m"
+              memory: "256Mi"
+            limits:
+              cpu: "256m"
+              memory: "512Mi"
+
+          # Readiness probe
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          # Liveness probe
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+# Frontend Service — exposes the frontend within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: cost-detective
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http

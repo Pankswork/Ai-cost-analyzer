@@ -1,0 +1,19 @@
+# ArgoCD Application for the backend service
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cost-detective-backend
+  namespace: argocd
+spec:
+  project: cost-detective
+  source:
+    repoURL: https://github.com/Pankswork/Ai-cost-analyzer.git
+    targetRevision: main
+    path: k8s/backend
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cost-detective
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

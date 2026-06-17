@@ -1,0 +1,88 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="My Dashboard — BestFreeAIFor" description="Your BestFreeAIFor dashboard">
+  <Navbar />
+  <main class="min-h-[60vh] py-16">
+    <div class="container-main">
+      <div id="auth-guard" class="hidden">
+        <p class="text-center text-body-lg text-body py-16">Please <a href="/login" class="text-ink underline">sign in</a> to view your dashboard.</p>
+      </div>
+      <div id="dashboard-content" class="hidden">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="text-display-xl text-ink">My Dashboard</h1>
+            <p class="text-body-md text-body" id="welcome-msg"></p>
+          </div>
+          <button id="logout-btn" class="px-4 py-2 rounded-lg border border-hairline text-body-sm text-body hover:bg-canvas-soft-2 transition-colors cursor-pointer">Sign Out</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <a href="/favorites" class="bg-canvas border border-hairline rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow no-underline">
+            <h3 class="text-display-sm text-ink mb-1">My Favorites</h3>
+            <p class="text-body-sm text-body">View your saved tools</p>
+          </a>
+          <a href="/submit" class="bg-canvas border border-hairline rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow no-underline">
+            <h3 class="text-display-sm text-ink mb-1">Submit a Tool</h3>
+            <p class="text-body-sm text-body">Suggest a new AI tool</p>
+          </a>
+          <a href="/admin" id="admin-link" class="bg-canvas border border-hairline rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow no-underline hidden">
+            <h3 class="text-display-sm text-ink mb-1">Admin Panel</h3>
+            <p class="text-body-sm text-body">Manage submissions & content</p>
+          </a>
+        </div>
+
+        <div class="bg-canvas border border-hairline rounded-xl p-6 shadow-card">
+          <h2 class="text-display-sm text-ink mb-4">My Recent Activity</h2>
+          <div id="favorites-list" class="space-y-3">
+            <p class="text-body-sm text-body">No activity yet. Start by favoriting some tools!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+import { getUser, isAuthenticated, isAdmin, logout, initAuth } from '../lib/auth';
+import { api } from '../lib/api';
+
+initAuth().then(() => {
+  const guard = document.getElementById('auth-guard')!;
+  const content = document.getElementById('dashboard-content')!;
+
+  if (!isAuthenticated()) {
+    guard.classList.remove('hidden');
+    return;
+  }
+
+  content.classList.remove('hidden');
+  const user = getUser()!;
+  document.getElementById('welcome-msg')!.textContent = `Welcome, ${user.name || user.email}`;
+
+  if (isAdmin()) {
+    document.getElementById('admin-link')!.classList.remove('hidden');
+  }
+
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    logout();
+    window.location.href = '/';
+  });
+
+  api.favorites.list().then(favs => {
+    const list = document.getElementById('favorites-list')!;
+    if (favs.length > 0) {
+      list.innerHTML = favs.map(f =>
+        `<a href="/tool/${f.tool_slug}" class="flex items-center justify-between p-3 rounded-lg border border-hairline hover:bg-canvas-soft-2 transition-colors no-underline">
+          <span class="text-body-md text-ink">${f.tool_name}</span>
+          <span class="text-body-sm text-body">${new Date(f.created_at).toLocaleDateString()}</span>
+        </a>`
+      ).join('');
+    }
+  });
+});
+</script>

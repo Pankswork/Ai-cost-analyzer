@@ -1,0 +1,28 @@
+# ArgoCD Root Application — "App of Apps" pattern
+#
+# This is the entry point for all ArgoCD Applications.
+# It watches the gitops/apps/ directory for Application manifests
+# and ensures they are synchronized to the cluster.
+#
+# Pattern: Root App → Directory of Apps → Each App manages its own k8s manifests
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cost-detective-root
+  namespace: argocd
+spec:
+  project: cost-detective
+  source:
+    repoURL: https://github.com/Pankswork/Ai-cost-analyzer.git
+    targetRevision: main
+    path: gitops/apps  # Directory containing individual Application manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true      # Delete resources removed from Git
+      selfHeal: true   # Revert manual changes to match Git
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true  # Auto-create namespaces from manifests

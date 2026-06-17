@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bestfreeaifor",
+  "compatibility_date": "2026-06-06",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    {
+      "pattern": "bestfreeaifor.com",
+      "custom_domain": true
+    }
+  ]
+}

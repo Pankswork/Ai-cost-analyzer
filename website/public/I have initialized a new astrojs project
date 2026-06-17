@@ -1,0 +1,804 @@
+I have initialized a new astrojs project, use astro docs mcp and tailwind-4-docs & web-design-guidelines skills for
+creating the website. Also use @DESIGN.md file and keep the website design like vercel.
+
+Name: Best Free AI For ? | The Ultimate AI Tool Directory
+Domain: besfreeaifor.com
+
+Create an website which suggest Best free ai website/tool that will also give description about the wenbsite/tool, user
+can select the option for which user want best free ai tool/website.
+options like:
+1. image generator
+2. video generator
+3. coding
+4. essay writing
+5. bussiness
+6. stocks
+7. best local llm's
+8. cloud based free llm's ---etc etc
+
+Suggest only best 3 free websites/tools with descrption and comparison to best one out there even it's paid so the user
+can uderstand the marked around it.
+
+My competitor website is https://bestai.com/ and it have some features which we need and we need to make a website
+better than it. Give me ideas how to make it better. go on to this website and check what exactly we need to make. Do
+not copy design or ui from that website.
+
+
+
+
+
+ERROR:
+1.these texts are stack on top of each other check layout:a.Best Free AI For What You Need
+Discover the best free AI tools and websites for any task. Curated comparisons, honest reviews, and zero marketing hype
+— just the tools that actually work.
+b.Select a category to discover the top 3 free AI tools — with honest comparisons and clear verdicts.
+c.Create stunning visuals with AI — from photorealistic renders to artistic illustrations. Here are the best free
+options — ranked by quality, features, and value.
+d.1
+Pick Your Category
+Choose from 8+ categories covering everything from image generation to local LLMs.
+
+2
+Compare Top 3
+See the best 3 free options with pros, cons, and a clear verdict for each.
+
+3
+Free vs Paid Reality
+Understand what you get free vs what paid alternatives offer — no surprises.
+
+e.8
+Categories
+24+
+Tools Analyzed
+100%
+Free Options
+Honest
+No Sponsorships
+
+f.The honest AI tool directory. Zero marketing hype — just real comparisons to help you find the best free AI for any
+task.
+
+2. Add dark mode
+
+3. browse ,categories and about button do nothing.
+
+4. explore tools buttons do nothing
+
+
+
+error:
+1. they still stack on top of each other just check these these they are not in single line:
+
+a. Best Free AI For What You Need
+Discover the best free AI tools and websites for any task. Curated comparisons, honest reviews, and zero marketing hype
+— just the tools that actually work.
+
+b. Select a category to discover the top 3 free AI tools — with honest comparisons and clear verdicts.
+c.Create stunning visuals with AI — from photorealistic renders to artistic illustrations. Here are the best free
+options — ranked by quality, features, and value.
+
+d.
+1
+Pick Your Category
+Choose from 8+ categories covering everything from image generation to local LLMs.
+
+2
+Compare Top 3
+See the best 3 free options with pros, cons, and a clear verdict for each.
+
+3
+Free vs Paid Reality
+Understand what you get free vs what paid alternatives offer — no surprises.
+
+e.
+8
+Categories
+24+
+Tools Analyzed
+100%
+Free Options
+Honest
+No Sponsorships
+
+f.The honest AI tool directory. Zero marketing hype — just real comparisons to help you find the best free AI for any
+task.
+
+these snippit of the code to verify fix this and others mentioned above:
+
+<h1 class="text-display-xl md:text-display-xl text-ink max-w-4xl mx-auto mb-6">
+  Best Free AI For&nbsp;<span class="relative">What You Need
+    <span
+      class="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-gradient-develop-start via-gradient-preview-start to-gradient-ship-start"></span>
+  </span>
+</h1>
+
+<p class="text-body-lg text-body max-w-2xl mx-auto mb-10">
+  Discover the best free AI tools and websites for any task. Curated comparisons,
+  honest reviews, and zero marketing hype — just the tools that actually work.
+</p>
+
+<div class="flex items-center justify-center gap-3">
+  <a href="#categories"
+    class="inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-ink text-white text-button-lg no-underline transition-opacity hover:opacity-90">
+    Explore Tools
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
+  </a>
+  <a href="#how-it-works"
+    class="inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-canvas text-ink text-button-lg border border-hairline no-underline transition-colors hover:bg-canvas-soft-2">
+    How It Works
+  </a>
+
+  error:
+  1. I think this line is the issue is makeing the box 3x1 ??
+  <p class="text-body-md text-body max-w-3xl text-balance"> Create stunning visuals with AI — from photorealistic
+    renders to artistic illustrations. Here are the best free options — ranked by quality, features, and value.
+
+    2.
+  <div class="bg-canvas-soft rounded-lg border border-hairline p-5 sm:p-6 text-center">
+    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-3 sm:mb-4">
+      <span class="text-display-sm text-white font-bold">1</span>
+    </div>
+    <h3 class="text-display-sm text-ink mb-2 text-balance">Pick Your Category</h3>
+    <p class="text-body-sm text-body">Choose from 8+ categories covering everything from image generation to local LLMs.
+    </p>
+  </div>
+
+  3. <div class="flex flex-wrap justify-center gap-x-8 gap-y-4 max-w-4xl mx-auto text-center">
+    <div class="flex items-baseline gap-2"> <span class="text-display-xl text-ink">8</span> <span
+        class="text-body-md text-mute">Categories</span> </div>
+    <div class="flex items-baseline gap-2"> <span class="text-display-xl text-ink">24+</span> <span
+        class="text-body-md text-mute">Tools Analyzed</span> </div>
+    <div class="flex items-baseline gap-2"> <span class="text-display-xl text-ink">100%</span> <span
+        class="text-body-md text-mute">Free Options</span> </div>
+    <div class="flex items-baseline gap-2"> <span class="text-display-xl text-ink">Honest</span> <span
+        class="text-body-md text-mute">No Sponsorships</span> </div>
+  </div>
+
+  4.<p class="text-body-lg text-body max-w-2xl mx-auto text-balance">
+    Select a category to discover the top 3 free AI tools — with honest comparisons and clear verdicts.
+  </p>
+
+  check all these snippits and check about the line ,border ,gaps , dimensions
+
+
+  error:
+  1. this is still 2x1 :<p class="text-body-lg text-body max-w-2xl mx-auto mb-10 text-balance">
+    Discover the best free AI tools and websites for any task. Curated comparisons,
+    honest reviews, and zero marketing hype — just the tools that actually work.
+  </p>
+
+  2. 4x1 ? still vertical:<h1 class="text-display-xl text-ink max-w-4xl mx-auto mb-6 text-balance">
+    Best Free AI For&nbsp;<span class="relative whitespace-nowrap">What You Need
+      <span
+        class="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-gradient-develop-start via-gradient-preview-start to-gradient-ship-start"></span>
+    </span> </h1>
+
+  3. 5x1? all the 3 colums and sticking together :<div class="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-5xl mx-auto">
+    <div class="bg-canvas-soft rounded-xl border border-hairline p-6 text-center shadow-card">
+      <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4"> <span
+          class="text-display-sm text-white font-bold">1</span> </div>
+      <h3 class="text-display-sm text-ink mb-2">Pick Your Category</h3>
+      <p class="text-body-sm text-body">Choose from 8+ categories covering everything from image generation to local
+        LLMs.</p>
+    </div>
+    <div class="bg-canvas-soft rounded-xl border border-hairline p-6 text-center shadow-card">
+      <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4"> <span
+          class="text-display-sm text-white font-bold">2</span> </div>
+      <h3 class="text-display-sm text-ink mb-2">Compare Top 3</h3>
+      <p class="text-body-sm text-body">See the best 3 free options with pros, cons, and a clear verdict for each.</p>
+    </div>
+    <div class="bg-canvas-soft rounded-xl border border-hairline p-6 text-center shadow-card">
+      <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4"> <span
+          class="text-display-sm text-white font-bold">3</span> </div>
+      <h3 class="text-display-sm text-ink mb-2">Free vs Paid Reality</h3>
+      <p class="text-body-sm text-body">Understand what you get free vs what paid alternatives offer — no surprises.</p>
+    </div>
+  </div>
+
+
+  error:
+  1: remove search icon as there is not need.
+  2:in dark mode these text should change to black:<a href="#categories"
+    class="inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-ink text-white text-button-lg no-underline transition-opacity hover:opacity-90">
+    Explore Tools
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14"></path>
+      <path d="m12 5 7 7-7 7"></path>
+    </svg> </a>
+
+  <span class="flex items-center justify-center w-8 h-8 rounded-full bg-ink text-white text-caption-mono font-bold"> 1
+  </span>
+  <span class="flex items-center justify-center w-8 h-8 rounded-full bg-ink text-white text-caption-mono font-bold"> 2
+  </span>
+  <span class="flex items-center justify-center w-8 h-8 rounded-full bg-ink text-white text-caption-mono font-bold"> 3
+  </span>
+
+  <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4"> <span
+      class="text-display-sm text-white font-bold">1</span> </div>
+  <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4"> <span
+      class="text-display-sm text-white font-bold">2</span> </div>
+  <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4"> <span
+      class="text-display-sm text-white font-bold">3</span> </div>
+
+  3: Remove category button as its of no use.
+
+
+
+
+  Do the On Page SEO of this Website for
+
+  Main Keyword: Best Free Ai For
+  Supporting Keywords: best free ai video generators 2026
+  best free ai image to video tools 2026
+  best ai for coding 2026
+  best ai for business
+  best ai for coding
+  best ai for writing essays
+  best ai
+  free ai for image
+  free ai for video
+  free ai for coding
+
+
+  these above keywords, also use proper og meta tags for SEO
+  on home page write 600 words about the tool for SEO
+
+
+
+
+
+  add seo friendly FAQ section for these below questions, add these to each category and and home make sure so questiion
+  get repeated any you are giving short/direct answer but do not leave imp information out :
+  Home page:
+
+  General Questions About Your Site
+  xml
+  What is BestFreeAIFor.com?
+  Are all the AI tools on this website really free?
+  How do you rank and select the best free AI tools?
+  Does BestFreeAIFor.com update its AI tool directory regularly?
+  Best Free AI Tools by Category (2026)
+  xml
+  What are the best free AI tools for students in 2026?
+  What is the best free AI chatbot in 2026?
+  What is the best free AI for coding in 2026?
+  What are the best free AI tools for writing and content creation?
+  Which AI image generator is best for free users?
+  What are the best free AI tools for marketing?
+  What is the best free AI for video generation?
+  Which free AI tool is best for business productivity?
+  Free Tier & Limitations Questions
+  xml
+  Do free AI tools have limitations or usage limits?
+  What's the difference between free and paid AI tools?
+  Can I use free AI tools for commercial purposes?
+  Which free AI tools don't require credit card?
+  Are there free AI tools without watermarks?
+  Comparison Questions
+  xml
+  ChatGPT vs Gemini vs Claude: Which free AI is best?
+  Is GitHub Copilot free for students?
+  What's the best free alternative to Midjourney?
+  Which free AI has the best coding capabilities?
+  Safety & Privacy Questions
+  xml
+  Are free AI tools safe to use?
+  Do free AI tools save my data and conversations?
+  Can I use free AI tools without signing up?
+  Getting Started Questions
+  xml
+  How do I get started with free AI tools?
+  What is the easiest free AI tool for beginners?
+  Do I need technical skills to use free AI tools?
+
+  Categories:
+
+  💬 AI General Chatbots (8 questions)
+  What is the best AI chatbot for general use in 2026?
+
+  What's the difference between ChatGPT, Claude, and Gemini?
+
+  Which AI chatbot is best for writing and coding?
+
+  Which AI chatbot is best for research-intensive tasks?
+
+  What's the best free AI chatbot available?
+
+  Can AI chatbots create images and videos?
+
+  Which AI chatbot provides citation-based responses with sources?
+
+  Is there an AI chatbot that lets me experiment with multiple models?
+
+  📊 Business (8 questions)
+  What are the best AI tools for business owners in 2026?
+
+  How can AI help with brainstorming ideas and marketing strategies?
+
+  Which AI tool is best for market research and drafting emails?
+
+  What AI tools help manage notes, to-dos, and calendars automatically?
+
+  Which AI tool is best for taking meeting notes?
+
+  How can AI help with grammar corrections on the go?
+
+  What AI tool consolidates notes, tasks, and databases into one location?
+
+  Which AI is the best alternative to Google for conducting research?
+
+  ☁️ Cloud-Based Free LLMs (8 questions)
+  Where can I run open-source LLMs on the cloud for free?
+
+  What are the best free LLM APIs without credit card requirements?
+
+  Which cloud providers offer free GPT-4 class models?
+
+  What free AI models are available through OpenRouter?
+
+  How many free requests per day do cloud LLM providers offer?
+
+  Which cloud AI platform offers 60-70+ models for free?
+
+  What's the rate limit for free Nvidia NIM API access?
+
+  Can I access Llama-3 and Gemini completely for free on the cloud?
+
+  💻 Coding (8 questions)
+  What is the best AI for coding in 2026?
+
+  Which AI coding tool is best for codebase-wide refactors?
+
+  What's the difference between Cursor, Windsurf, and Claude Code?
+
+  Which AI model is best for Rust refactoring tasks?
+
+  Is there a one-size-fits-all AI model for coding?
+
+  What AI coding tool has the best speed to production?
+
+  Which AI coding assistant is best for debugging?
+
+  What's the best no-code app builder for rapid prototyping?
+
+  What is the best free AI for coding?
+
+  Which AI is best for coding in 2026?
+
+  📢 Content & Marketing (8 questions)
+  What is AI in digital marketing and why is it important?
+
+  What AI marketing tools should businesses prioritize in 2026?
+
+  Is ChatGPT good for content marketing?
+
+  How can you use ChatGPT for SEO and content creation?
+
+  What are the risks and rewards of using AI-generated content?
+
+  How does AI help with personalizing emails and automating content?
+
+  What are the best AI tools for social media management?
+
+  How can AI help with keyword research and content clustering?
+
+  🎭 Creative AI & Design (8 questions)
+
+  Which AI is best for image generation for free?
+
+  What is the best way to generate AI art for free?
+
+  What are the top AI tools for beginner designers in 2026?
+
+  Which AI tool is best for creative brainstorming?
+
+  What AI tools generate visuals for design projects?
+
+  Which AI optimizes colors and selects fonts automatically?
+
+  What AI tools simplify drawing and enhance image quality?
+
+  Which AI tools are best for removing backgrounds from images?
+
+  What AI design tools are available for animation and 3D objects?
+
+  How can AI help with branding and creative projects?
+
+  ✍️ Essay Writing (8 questions)
+  What is the best AI essay writer with citations?
+
+  Can AI write plagiarism-free essays?
+
+  What citation styles do AI essay writers support (APA, MLA, Chicago)?
+
+  Is there a free AI essay writer with no sign-up required?
+
+  How quickly can AI generate an essay with citations?
+
+  What academic levels does AI essay writing support?
+
+  How many words can AI essay writers generate for free?
+
+  Can AI find real scholarly sources for essays?
+
+  🎮 Gaming (8 questions)
+  What are the best AI tools for game development in 2026?
+
+  Which AI tools help create 3D environments from text prompts?
+
+  What AI tools generate concept art for game developers?
+
+  Which AI tools are best for animation from videos?
+
+  What AI generates realistic voice acting and dialogue?
+
+  Can AI help with game design principles and feedback?
+
+  Which AI tools work with Unreal Engine for code generation?
+
+  What free AI tools are available for indie game developers?
+
+  🏥 Healthcare (8 questions)
+  Will the AI tool result in improved data analysis and insights?
+
+  Can AI software help with medical diagnosis?
+
+  Will the AI system support personalized medicine?
+
+  How can AI enhance patient engagement in healthcare?
+
+  How can we ensure every AI decision is traceable to clinical data?
+
+  How do we validate AI tools clinically, not just technically?
+
+  What are the most common AI applications in healthcare?
+
+  What matters most when choosing healthcare AI?
+
+  ✂️ Image Editing (8 questions)
+  What is the best AI image editor for professional workflows?
+
+  Which AI image editing model is the most versatile and powerful?
+
+  What's the easiest AI image editor to get started with?
+
+  Can AI image editors work with multiple images at once?
+
+  Which AI image editor is best for fast, high-quality editing?
+
+  What's the difference between AI image editing and AI image generation?
+
+  Are AI image editors commercially safe for professional use?
+
+  How do AI image editors compare to traditional photo editing software?
+
+  🎨 Image Generator (8 questions)
+  What is the best AI image generator in 2026?
+
+  Which AI image generator is best for free users?
+
+  Can AI generate photorealistic renders and artistic illustrations?
+
+  Is ChatGPT the best AI image generator overall?
+
+  What's the difference between Midjourney, DALL-E, and Imagen 4?
+
+  How does AI image generation feel compared to collaborating with a person?
+
+  Which AI image generator works best for both free and paid users?
+
+  What types of visuals can AI image generators create?
+
+  ⚖️ Legal (8 questions)
+  What is AI for legal research and how does it work?
+
+  What's the difference between legal AI tools and general chatbots?
+
+  Which AI legal research platform is known for advanced analytics?
+
+  What AI tool helps with content summaries and clause analysis?
+
+  Are there free AI tools for legal research?
+
+  What ethical standards should lawyers follow when using AI?
+
+  How does AI analyze case law faster than traditional methods?
+
+  What AI features are worth investment for law firms?
+
+  🖥️ Local LLMs (8 questions)
+  What are the best local LLM tools and models in 2026?
+
+  What GPU is best for running local AI?
+
+  How much RAM do I need for running local LLMs?
+
+  What's the difference between AnythingLLM and OpenWebUI?
+
+  Can I use external GPU for local AI?
+
+  What's the wattage requirement for RTX 4090 local AI rig?
+
+  Which CPU is best for local AI?
+
+  How do I build a budget AI PC for local LLMs?
+
+  📐 Math Solvers (8 questions)
+  What is the best AI math solver for homework help?
+
+  Can AI math solvers solve problems with just a photo?
+
+  What types of math problems can AI solve?
+
+  Which AI math solver is most accurate?
+
+  Is there an AI math solver that provides step-by-step solutions?
+
+  Can AI math solvers handle chemistry and accounting problems?
+
+  What's the best free AI math calculator app?
+
+  Do AI math solvers have mobile apps?
+
+  🎵 Music & Audio (8 questions)
+  What is the best AI music generator in 2026?
+
+  Which AI music generator creates complete songs with vocals?
+
+  Can AI generate jazz songs with lyrics and instruments from prompts?
+
+  What AI music generator is completely free?
+
+  Which AI tools are best for background tracks?
+
+  What AI tool is good for creating music loops?
+
+  Which AI composer handles complex music composition?
+
+  What's the best AI for casual users vs professional music creation?
+
+  📝 Notes Reading (8 questions)
+  What is the best AI tool to summarize PDFs and documents?
+
+  Can AI read, analyze, and answer questions about my notes?
+
+  What AI learning assistant boosts efficiency by 10x?
+
+  Can AI summarize YouTube videos and lectures?
+
+  How do I build an AI-powered notes library?
+
+  Can AI translate PDFs and create visuals for notes?
+
+  What AI tool helps turn lectures into text automatically?
+
+  Is there a free AI note summarizer available?
+
+  ⚡ Productivity AI (8 questions)
+  What are the best AI productivity tools in 2026?
+
+  Which AI tool automates scheduling and manages tasks?
+
+  What AI assistant summarizes meetings automatically?
+
+  How can AI help write cleaner code and debug faster?
+
+  What are the best AI tools for test automation?
+
+  Which AI tool is best for AI orchestration and automation?
+
+  What AI tools help with knowledge management?
+
+  Which AI scheduling tool integrates with calendar and email?
+
+  🔬 Researching (8 questions)
+  What are the top 10 AI tools for research in 2026?
+
+  Which AI tool fits best for quick analysis and charts?
+
+  What AI tools help evaluate academic studies?
+
+  How can AI help discover new sources for literature review?
+
+  What AI tool synthesizes information from scholarly databases?
+
+  Which AI research tools provide cited insights?
+
+  How does AI save researchers' time in literature review?
+
+  What AI tool offers straightforward platform for academic research?
+
+  🎪 Role-Playing Chatbots (8 questions)
+  What are the best AI chatbots for roleplay in 2026?
+
+  Which AI chatbot is best for casual roleplay and interactive stories?
+
+  What AI chatbot allows very long prompts?
+
+  Which roleplay AI has the best memory and recall?
+
+  What AI chatbot remains in character flawlessly?
+
+  Is there an uncensored AI chatbot for roleplay?
+
+  Which roleplay AI generates outstanding images and videos?
+
+  What's the top choice for immersive role-playing chatbots?
+
+  🏋️ Sports & Fitness (8 questions)
+  What AI coach is fundamentally different from generic AI tools?
+
+  How does AI training adjust to fitness, fatigue, and schedule?
+
+  What AI is trained on sport science knowledge by physiologists?
+
+  Can AI analyze training data to create adaptive workout plans?
+
+  What AI tool helps endurance athletes train smarter?
+
+  How does AI explain fitness and recovery in plain language?
+
+  What's the best AI for athletic training and performance analysis?
+
+  Can AI help with fitness tracking and workout planning?
+
+  📈 Stocks & Finance (8 questions)
+  What are the best AI tools for financial analysis in 2026?
+
+  Which AI tool is best for stock market research?
+
+  What AI provides investment insights and portfolio analysis?
+
+  How can AI help with financial forecasting?
+
+  Which AI tool automates financial reports and dashboards?
+
+  What AI is best for scenario planning and budget analysis?
+
+  How does AI combine generative AI with financial data?
+
+  What AI tool empowers financial decision-making?
+
+  🎓 Students (8 questions)
+  What are the best free AI tools for students in 2026?
+
+  Which AI tool transforms PowerPoint and lectures into study aids?
+
+  What AI creates flashcards, quizzes, and tests automatically?
+
+  Is there an AI tutor for students available for free?
+
+  What AI helps ace exams and refine writing?
+
+  Which AI tool helps students study smarter and faster?
+
+  What AI tools improve writing and boost productivity for students?
+
+  How can students use AI to stay organized for free?
+
+  👩‍🏫 Teachers & Educators (8 questions)
+  What AI tools should every teacher explore in 2026?
+
+  How can AI help teachers save time on lesson planning?
+
+  What AI tools help with assessment creation and differentiation?
+
+  Which AI improves classroom communication?
+
+  What are the best free AI tools for teachers?
+
+  How can AI help teachers work more efficiently?
+
+  What AI tools personalize learning and create teaching content?
+
+  Which AI tools are available for classroom use?
+
+  🏆 Top Free LLMs (8 questions)
+  What are the three best large language models available for free?
+
+  How are free LLMs ranked by intelligence and reasoning?
+
+  Which free LLM has the best real-world performance?
+
+  What's the difference between ChatGPT, Claude, and Gemini for free users?
+
+  Which free LLM is best for general-purpose thinking?
+
+  What free LLM excels at long-form writing and deep reasoning?
+
+  Which free LLM is best for research-intensive tasks?
+
+  How do I access the top free LLMs without paying?
+
+  🎞️ Video Editing (8 questions)
+  What are the best AI video editing tools in 2026?
+
+  Which AI tool helps with video trimming and effects?
+
+  What AI video editor provides automatic transcription?
+
+  How does AI help with post-production workflows?
+
+  What's the difference between video editing and text-to-video generation?
+
+  Which AI tool is best for creating video content from files?
+
+  What AI video editor works for professional workflows?
+
+  How can AI automate video editing tasks?
+
+  🎬 Video Generator (8 questions)
+
+  How do I generate video with AI for free?
+
+  How to create AI videos for free without watermarks?
+
+  What are the top 5 AI video generators in 2026?
+
+  Which AI video generator creates videos from text prompts?
+
+  What AI video tools are best for content creation?
+
+  How does AI transform text into video content?
+
+  Which AI video generator produces the most realistic results?
+
+  What AI video tools are free or have free tiers?
+
+  Can AI generate videos for YouTube, TikTok, and Instagram?
+
+  What's the best AI video generator for business projects?ideo tools are best for content creation?
+
+  How does AI transform text into video content?
+
+  Which AI video generator produces the most realistic results?
+
+  What AI video tools are free or have free tiers?
+
+  Can AI generate videos for YouTube, TikTok, and Instagram?
+
+  What's the best AI video generator for business projects?
+
+  NOTE: Use JSON-LD for FAQ SEO
+  example: ```
+  <script type="application/ld+json">
+ {
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [{
+ "@type": "Question",
+ "name": "How to find an apprenticeship?",
+ "acceptedAnswer": {
+ "@type": "Answer",
+ "text": "<p>We provide an official service to search through available apprenticeships. To get started, create an account here, specify the desired region, and your preferences. You will be able to search through all officially registered open apprenticeships.</p>"
+ }
+ }, {
+ "@type": "Question",
+ "name": "Whom to contact?",
+ "acceptedAnswer": {
+ "@type": "Answer",
+ "text": "You can contact the apprenticeship office through our official phone hotline above, or with the web-form below. We generally respond to written requests within 7-10 days."
+ }
+ }]
+ }
+ </script>
+  ```
+
+  Act as a Principal Cloud Security Engineer. I need to secure my static website, bestfreesifor.com, which is registered
+  via BigRock and hosted on Cloudflare Workers. Recently, the site has been hit with a high volume of bot traffic,
+  scrapers, and 4xx errors. My goal is to ensure only legitimate human traffic, verified search engine crawlers, and
+  approved AI agents pass through.Please provide a complete, production-ready Cloudflare security configuration covering
+  the following 2026 standards:Workers Configuration: Provide the wrangler.jsonc setup using the latest
+  compatibility_date and the nodejs_compat flag. Bot Management: Implement Cloudflare's June 2026 Bot Management update.
+  Configure rules to natively validate W3C Web Bot Auth tokens, allowing "Verified AI Agents" while strictly blocking
+  unverified scrapers and headless browsers.WAF Custom Rules: Define WAF rules to drop traffic with low IP reputation
+  scores and implement Cloudflare Turnstile (Managed Challenges) to filter out suspicious requests without showing
+  legacy CAPTCHAs to real users. Rate Limiting: Set up rate-limiting rules to prevent 4xx/5xx burst attacks and
+  volumetric resource exhaustion.Infrastructure as Code: Output the WAF, Rate Limiting, and Bot Management rules as
+  Terraform blocks (cloudflare_ruleset) so I can deploy this via my CI/CD pipeline.Focus on dropping malicious telemetry
+  while keeping the time-to-first-byte (TTFB) ultra-low for real users.

@@ -1,0 +1,10 @@
+# Namespace for the AI Cost Detective application
+# All application resources live in this namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cost-detective
+  labels:
+    name: cost-detective
+    environment: dev
+    managed-by: argocd

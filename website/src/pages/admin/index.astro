@@ -1,0 +1,68 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout title="Admin Panel — BestFreeAIFor" description="Admin panel">
+  <Navbar />
+  <main class="min-h-screen py-16">
+    <div class="container-main">
+      <div id="auth-guard" class="hidden">
+        <p class="text-center text-body-lg text-body py-16">Access denied. <a href="/login" class="text-ink underline">Sign in</a></p>
+      </div>
+      <div id="admin-content" class="hidden">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-display-xl text-ink">Admin Panel</h1>
+          <span class="px-3 py-1 rounded-full bg-ink text-white dark:text-canvas text-caption-mono">Admin</span>
+        </div>
+
+        <div id="stats-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <div class="bg-canvas border border-hairline rounded-xl p-4 text-center shadow-card"><div class="text-2xl font-bold text-ink" id="stat-tools">-</div><div class="text-body-sm text-body">Tools</div></div>
+          <div class="bg-canvas border border-hairline rounded-xl p-4 text-center shadow-card"><div class="text-2xl font-bold text-ink" id="stat-categories">-</div><div class="text-body-sm text-body">Categories</div></div>
+          <div class="bg-canvas border border-hairline rounded-xl p-4 text-center shadow-card"><div class="text-2xl font-bold text-yellow-600" id="stat-pending">-</div><div class="text-body-sm text-body">Pending</div></div>
+          <div class="bg-canvas border border-hairline rounded-xl p-4 text-center shadow-card"><div class="text-2xl font-bold text-red-600" id="stat-messages">-</div><div class="text-body-sm text-body">Messages</div></div>
+          <div class="bg-canvas border border-hairline rounded-xl p-4 text-center shadow-card"><div class="text-2xl font-bold text-ink" id="stat-users">-</div><div class="text-body-sm text-body">Users</div></div>
+          <div class="bg-canvas border border-hairline rounded-xl p-4 text-center shadow-card"><div class="text-2xl font-bold text-ink" id="stat-subs">-</div><div class="text-body-sm text-body">Subscribers</div></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <a href="/admin/submissions" class="bg-canvas border border-hairline rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow no-underline">
+            <h3 class="text-display-sm text-ink mb-2">📥 Submissions</h3>
+            <p class="text-body-sm text-body">Review tool submissions</p>
+          </a>
+          <a href="/admin/messages" class="bg-canvas border border-hairline rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow no-underline">
+            <h3 class="text-display-sm text-ink mb-2">✉️ Messages</h3>
+            <p class="text-body-sm text-body">View contact messages</p>
+          </a>
+          <a href="/admin/cost-reports" class="bg-canvas border border-hairline rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow no-underline">
+            <h3 class="text-display-sm text-ink mb-2">💰 Cost Reports</h3>
+            <p class="text-body-sm text-body">View cost analysis history</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+import { isAdmin, initAuth } from '../../lib/auth';
+import { api } from '../../lib/api';
+
+initAuth().then(async () => {
+  if (!isAdmin()) {
+    document.getElementById('auth-guard')!.classList.remove('hidden');
+    return;
+  }
+  document.getElementById('admin-content')!.classList.remove('hidden');
+
+  const stats = await api.admin.stats();
+  document.getElementById('stat-tools')!.textContent = String(stats.tools);
+  document.getElementById('stat-categories')!.textContent = String(stats.categories);
+  document.getElementById('stat-pending')!.textContent = String(stats.pending_submissions);
+  document.getElementById('stat-messages')!.textContent = String(stats.unread_messages);
+  document.getElementById('stat-users')!.textContent = String(stats.users);
+  document.getElementById('stat-subs')!.textContent = String(stats.subscribers);
+});
+</script>

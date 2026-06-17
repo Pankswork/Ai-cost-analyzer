@@ -1,0 +1,321 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import ToolCard from '../components/ToolCard.astro';
+import FAQSection from '../components/FAQSection.astro';
+import Footer from '../components/Footer.astro';
+import { categories, slugify } from '../data/tools';
+
+const allCategories = [...categories].sort((a, b) => a.title.localeCompare(b.title));
+const firstCategory = allCategories[0];
+const remainingCategories = allCategories.slice(1);
+const siteUrl = 'https://bestfreeaifor.com';
+const catKeywords = allCategories.map(c => `best free ai for ${c.title.toLowerCase()}`).join(', ');
+const homeKeywords = `best free ai for, best free ai tools 2026, free ai tools, best ai tools, ai tool directory, compare ai tools, ${catKeywords}`;
+---
+
+<Layout
+  title="Best Free AI For 2026 — Compare & Discover Top Free AI Tools"
+  description="Find the best free AI for 2026. Compare best free AI video generators, best free AI image to video tools, best AI for coding 2026, best AI for business, best AI for writing essays, and more — all with honest, unbiased reviews."
+  canonicalUrl={`${siteUrl}/`}
+  keywords={homeKeywords}
+  ogImage={`${siteUrl}/og-image.png`}
+  ogImageAlt="Best Free AI For 2026 — Compare top free AI tools including video generators, coding assistants, image generators, and writing tools"
+>
+  <Navbar />
+  <Hero />
+
+  <!-- Categories Section -->
+  <section id="categories" class="py-16 md:py-24 scroll-mt-20">
+    <div class="container-main">
+      <div class="text-center mb-12">
+        <span class="text-caption-mono text-mute block mb-3">CHOOSE YOUR NEED</span>
+        <h2 class="text-display-lg text-ink mb-4 text-balance">What do you need AI for?</h2>
+        <p class="text-body-lg text-body mx-auto text-balance">
+          Select a category to discover the best free AI tools of 2026 — with honest comparisons and clear verdicts.
+        </p>
+      </div>
+
+      <!-- Category Grid -->
+      <div class="flex flex-col lg:flex-row gap-4 mb-16">
+        <!-- Left Sidebar: Trends + News -->
+        <div class="w-full lg:w-64 shrink-0 flex flex-col gap-4 lg:sticky lg:top-24 lg:z-10 order-3 lg:order-none">
+          <div class="bg-canvas border border-hairline rounded-lg p-4">
+            <span class="text-caption-mono text-mute block mb-3">AI TRENDS</span>
+            <ul class="space-y-2.5">
+              <li><a href="https://huggingface.co/papers" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Hugging Face Papers</a></li>
+              <li><a href="https://paperswithcode.com" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Papers With Code</a></li>
+              <li><a href="https://llm-stats.com/llm-updates" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">LLM Stats (Model Releases)</a></li>
+              <li><a href="https://www.artificialintelligence-news.com" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">AI News</a></li>
+              <li><a href="https://simonwillison.net/tags/ai/" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Simon Willison AI</a></li>
+              <li><a href="https://www.latent.space" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Latent Space</a></li>
+              <li><a href="https://www.theregister.com/software/ai/" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">The Register AI</a></li>
+            </ul>
+          </div>
+          <div class="bg-canvas border border-hairline rounded-lg p-4">
+            <span class="text-caption-mono text-mute block mb-3">AI NEWS</span>
+            <ul class="space-y-2.5">
+              <li><a href="https://openai.com/blog" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">OpenAI Blog (GPT-5.5, GPT Image 2)</a></li>
+              <li><a href="https://www.anthropic.com/blog" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Anthropic Blog (Claude Opus 4.8)</a></li>
+              <li><a href="https://blog.google/technology/ai/" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Google AI Blog (Gemini 3.5, Gemma 4)</a></li>
+              <li><a href="https://microsoft.ai/news/" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Microsoft AI (MAI Models)</a></li>
+              <li><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">TechCrunch AI</a></li>
+              <li><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">VentureBeat AI</a></li>
+              <li><a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener noreferrer" class="text-body-sm text-body no-underline hover:text-ink transition-colors">MIT Tech Review AI</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Category Grid (scrollable box) -->
+        <div class="flex-1 min-w-0 order-1 lg:order-none">
+          <div class="bg-canvas border border-hairline rounded-lg p-4">
+            <span class="text-caption-mono text-mute block mb-3">CATEGORIES</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2" id="category-grid">
+              {
+                allCategories.map((cat) => (
+                  <CategoryCard
+                    id={cat.id}
+                    title={cat.title}
+                    description={cat.description}
+                    icon={cat.icon}
+                  />
+                ))
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Sidebar: Offers -->
+        <div id="offers" class="w-full lg:w-64 shrink-0 flex flex-col gap-4 lg:sticky lg:top-24 lg:z-10 order-2 lg:order-none">
+          <div class="bg-black dark:bg-white rounded-lg p-4 relative shine-border">
+            <span class="text-caption-mono text-white dark:text-black block mb-3">OFFER</span>
+            <div class="flex flex-col gap-2.5">
+              <a href="/offers/mythic" class="relative block rounded-lg p-3.5 no-underline overflow-hidden group shine-card rainbow-card shine-border">
+                <div class="shine-overlay"></div>
+                <div class="relative z-10">
+                  <span class="text-xs font-bold tracking-widest text-black drop-shadow-lg uppercase">Mythic</span>
+                </div>
+              </a>
+              <a href="/offers/rare" class="relative block rounded-lg p-3.5 no-underline overflow-hidden group shine-card purple-card shine-border">
+                <div class="shine-overlay"></div>
+                <div class="relative z-10">
+                  <span class="text-xs font-semibold tracking-widest text-black drop-shadow-lg uppercase">Rare</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="py-16 md:py-24 bg-canvas border-y border-hairline scroll-mt-20">
+    <div class="container-main">
+      <div class="text-center mb-12">
+        <span class="text-caption-mono text-mute block mb-3">HOW IT WORKS</span>
+        <h2 class="text-display-lg text-ink mb-4">Why BestFreeAIFor? <span class="text-mute">— 2026 Edition</span></h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-canvas-soft rounded-xl border border-hairline p-6 text-center shadow-card">
+          <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4">
+            <span class="text-display-sm text-white dark:text-canvas font-bold">1</span>
+          </div>
+          <h3 class="text-display-sm text-ink mb-2">Pick Your Category</h3>
+          <p class="text-body-sm text-body">Choose from {allCategories.length}+ categories covering everything from image generation to math solvers.</p>
+        </div>
+
+        <div class="bg-canvas-soft rounded-xl border border-hairline p-6 text-center shadow-card">
+          <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4">
+            <span class="text-display-sm text-white dark:text-canvas font-bold">2</span>
+          </div>
+          <h3 class="text-display-sm text-ink mb-2">Compare Top AI Tools</h3>
+          <p class="text-body-sm text-body">See the best free AI options with pros, cons, and a clear verdict for each.</p>
+        </div>
+
+        <div class="bg-canvas-soft rounded-xl border border-hairline p-6 text-center shadow-card">
+          <div class="w-12 h-12 rounded-full bg-ink flex items-center justify-center mx-auto mb-4">
+            <span class="text-display-sm text-white dark:text-canvas font-bold">3</span>
+          </div>
+          <h3 class="text-display-sm text-ink mb-2">Free vs Paid Reality</h3>
+          <p class="text-body-sm text-body">Understand what you get free vs what paid alternatives offer — no surprises.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="py-16 md:py-20">
+    <div class="container-main">
+      <div class="flex flex-wrap justify-center gap-x-6 gap-y-5 mx-auto text-center">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-display-xl text-ink">{allCategories.length}</span>
+          <span class="text-body-md text-mute">Categories</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-display-xl text-ink">{allCategories.reduce((acc, cat) => acc + cat.tools.length, 0)}+</span>
+          <span class="text-body-md text-mute">Tools Analyzed</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-display-xl text-ink">100%</span>
+          <span class="text-body-md text-mute">Free Options</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-display-xl text-ink">Honest</span>
+          <span class="text-body-md text-mute">No Sponsorships</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-display-xl text-ink">2026</span>
+          <span class="text-body-md text-mute">Updated for 2026</span>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="flex flex-wrap justify-center gap-4 mt-10 pt-8 border-t border-hairline">
+        <a href="/about" class="text-body-sm text-body no-underline hover:text-ink transition-colors border border-hairline rounded-pill-sm px-4 py-2 bg-canvas">About Us</a>
+        <a href="/privacy" class="text-body-sm text-body no-underline hover:text-ink transition-colors border border-hairline rounded-pill-sm px-4 py-2 bg-canvas">Privacy Policy</a>
+        <a href="/terms" class="text-body-sm text-body no-underline hover:text-ink transition-colors border border-hairline rounded-pill-sm px-4 py-2 bg-canvas">Terms & Conditions</a>
+        <a href="/contact" class="text-body-sm text-body no-underline hover:text-ink transition-colors border border-hairline rounded-pill-sm px-4 py-2 bg-canvas">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEO Content Section -->
+  <section class="py-16 md:py-24 bg-canvas border-t border-hairline">
+    <div class="container-main">
+      <div class="text-center mb-12">
+        <span class="text-caption-mono text-mute block mb-3">GUIDE</span>
+        <h2 class="text-display-lg text-ink mb-4 text-balance">Best Free AI For 2026 — Your Complete Guide to Free AI Tools</h2>
+        <p class="text-body-md text-body">
+          Looking for the <strong>best free AI for</strong> your specific needs as of June 2026? You have come to the right place. Whether you need the <strong>best free AI video generators 2026</strong>, the <strong>best AI for coding 2026</strong>, or the <strong>best AI for writing essays</strong>, we compare each tool across quality, free tier limits, watermark policies, and real-world usability — no fluff, just straight facts so you can decide fast.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-canvas rounded-lg border border-hairline p-6 shadow-card">
+          <span class="text-caption-mono text-mute block mb-2">VIDEO GENERATION</span>
+          <h3 class="text-display-sm text-ink mb-2">Best Free AI Video Generators 2026</h3>
+          <p class="text-body-md text-body">
+            The <strong>best free AI video generators 2026</strong> have transformed content creation with capabilities that rival paid platforms. Google Veo 3.1 leads with 100 monthly credits for 1080p cinematic clips complete with native audio — now including a 12-month free student tier. Kling 3.0 delivers 66 daily credits with unmatched motion physics and cinematic realism — the most commercially validated AI video model with $240M in annual revenue and 60M creators. CapCut offers a complete professional video editor with integrated AI features at absolutely no cost, including unlimited 4K exports with no watermark on desktop. Runway Gen-4 provides 125 credits with professional editing controls. HappyHorse 1.0 ranks #1 on Artificial Analysis for text-to-video quality. For <strong>free ai for video</strong> creation, these platforms represent the best options available today.
+          </p>
+        </div>
+
+        <div class="bg-canvas rounded-lg border border-hairline p-6 shadow-card">
+          <span class="text-caption-mono text-mute block mb-2">IMAGE TO VIDEO</span>
+          <h3 class="text-display-sm text-ink mb-2">Best Free AI Image to Video Tools 2026</h3>
+          <p class="text-body-md text-body">
+            The <strong>best free AI image to video tools 2026</strong> breathe life into static images with stunning motion effects and synchronized audio. HappyHorse 1.0 currently ranks #1 on Artificial Analysis for image-to-video generation, producing high-quality animation with synchronized audio that rivals premium tools. Pika offers daily free credits for image-to-video conversion with fun styles and even lip-sync capability. Google Veo 3 excels at animating still images with cinematic camera movements and professional-grade output. When you compare these <strong>free ai for video</strong> tools, you will find clear breakdowns of resolution caps, generation speeds, and creative controls that help you choose the perfect platform for your needs.
+          </p>
+        </div>
+
+        <div class="bg-canvas rounded-lg border border-hairline p-6 shadow-card">
+          <span class="text-caption-mono text-mute block mb-2">CODING</span>
+          <h3 class="text-display-sm text-ink mb-2">Best AI for Coding 2026</h3>
+          <p class="text-body-md text-body">
+            Developers searching for the <strong>best AI for coding 2026</strong> have more free options than ever before. Gemini Code Assist offers 6,000 completions per month with 240 chats and 50 agent mode runs powered by Gemini 3.5 Flash. Cursor 3.7 delivers an AI-native editor experience with Composer, Design Mode with visual element selection, and non-blocking voice input. Windsurf provides unlimited completions with its Cascade agent that autonomously debugs and refactors code. Xiaomi's new MiMo Code — open-sourced June 2026 — beats Claude Code on benchmarks with free MiMo-V2.5 access and no registration required. Claude Code operates from the terminal, reading your codebase, making changes, and running tests autonomously. For the <strong>best AI for coding</strong> at zero cost, our comparisons cover monthly limits, model quality, IDE integration, and agentic capability. Whether you need <strong>free ai for coding</strong> as a student or professional developer, we have you covered.
+          </p>
+        </div>
+
+        <div class="bg-canvas rounded-lg border border-hairline p-6 shadow-card">
+          <span class="text-caption-mono text-mute block mb-2">BUSINESS</span>
+          <h3 class="text-display-sm text-ink mb-2">Best AI for Business</h3>
+          <p class="text-body-md text-body">
+            The <strong>best AI for business</strong> combines versatility with practical utility for entrepreneurs and teams. ChatGPT free tier offers GPT-5.5 Instant for drafting emails, analyzing spreadsheets, and brainstorming strategies with web search included. Microsoft Copilot provides free GPT-5.5 access with no message caps, making it ideal for daily business tasks. Canva AI brings professional design to marketing materials with AI-powered templates and editing tools. Zapier AI free tier connects 5,000+ apps with 100 monthly tasks for workflow automation. Our comparisons help you find the <strong>best AI</strong> for your specific business needs, whether you are a solo entrepreneur or a growing team.
+          </p>
+        </div>
+
+        <div class="bg-canvas rounded-lg border border-hairline p-6 shadow-card">
+          <span class="text-caption-mono text-mute block mb-2">ESSAY WRITING</span>
+          <h3 class="text-display-sm text-ink mb-2">Best AI for Writing Essays</h3>
+          <p class="text-body-md text-body">
+            Students and writers seeking the <strong>best AI for writing essays</strong> will find exceptional free options in 2026. Claude delivers nuanced, well-structured prose with a 200K context window — now with web search and file uploads included on the free tier. ChatGPT offers GPT-5.5 Instant for everyday writing support with file uploads and web search included. Perplexity excels at research-backed essays with real citations from academic sources. QuillBot remains unmatched for paraphrasing and grammar improvement with multiple rewriting modes. Our platform compares word limits, citation support, tone control, and model intelligence so you can find the <strong>best AI</strong> writing assistant for your academic needs.
+          </p>
+        </div>
+
+        <div class="bg-canvas rounded-lg border border-hairline p-6 shadow-card">
+          <span class="text-caption-mono text-mute block mb-2">IMAGE GENERATION</span>
+          <h3 class="text-display-sm text-ink mb-2">Free AI for Image Generation</h3>
+          <p class="text-body-md text-body">
+            When it comes to <strong>free ai for image</strong> creation, 2026 offers extraordinary options. Google Gemini with Nano Banana Pro (Gemini 3 Pro Image) delivers ~20 images/day of 4K photorealistic output with best-in-class text rendering and infographics. FLUX.2 [dev] is now available as open-weights — self-host for unlimited 4MP photorealistic generations at zero cost. Microsoft Designer offers genuinely unlimited DALL-E 3 generations with no watermarks. Leonardo AI provides 150 daily tokens across multiple specialized models with built-in editing tools. Ideogram 4 (released June 2026) produces the most accurate text rendering with improved layouts and typography. Our <strong>free ai for image</strong> comparisons evaluate each platform on image quality, daily limits, watermark policies, and commercial rights so you can pick the perfect tool for your projects.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-canvas-soft rounded-lg border border-hairline p-6 shadow-card">
+        <span class="text-caption-mono text-mute block mb-2">FIND YOUR TOOL</span>
+        <h3 class="text-display-sm text-ink mb-2">Find the Best AI Free Tools for Every Need</h3>
+        <p class="text-body-md text-body">
+          At BestFreeAIFor.com, our mission is to help you discover the <strong>best free AI for</strong> your specific requirements. We update our comparisons daily with the latest free tiers, model releases (GPT-5.5, Gemini 3.5 Flash, Claude Sonnet 4.6, Opus 4.8, DeepSeek V4 Flash, MiMo-V2.5, Kling 3.0), and pricing changes so you always have accurate information as of June 2026. Whether you need the <strong>best free AI video generators 2026</strong>, the <strong>best free AI image to video tools 2026</strong>, the <strong>best AI for coding 2026</strong>, the <strong>best AI for business</strong>, the <strong>best AI for writing essays</strong>, <strong>free ai for image</strong>, <strong>free ai for video</strong>, or <strong>free ai for coding</strong>, our curated guides give you everything you need to choose with confidence. Bookmark our site as your go-to resource for honest, unbiased <strong>best AI</strong> tool comparisons — no sponsorships, no noise, just the tools that actually work.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <FAQSection categoryId="home" />
+
+  <Footer />
+</Layout>
+
+<style>
+  .rainbow-card {
+    background: linear-gradient(to right,
+      #ff0000 0%, #ff0000 14.28%,
+      #ff8800 14.28%, #ff8800 28.57%,
+      #ffff00 28.57%, #ffff00 42.85%,
+      #00cc44 42.85%, #00cc44 57.14%,
+      #0088ff 57.14%, #0088ff 71.42%,
+      #4400cc 71.42%, #4400cc 85.71%,
+      #8800aa 85.71%, #8800aa 100%
+    );
+  }
+
+  .purple-card {
+    background: linear-gradient(to right,
+      #e9d5ff 0%, #e9d5ff 20%,
+      #d8b4fe 20%, #d8b4fe 40%,
+      #a855f7 40%, #a855f7 60%,
+      #7c3aed 60%, #7c3aed 80%,
+      #581c87 80%, #581c87 100%
+    );
+  }
+
+  .shine-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 0%,
+      transparent 25%,
+      rgba(192, 192, 192, 0.2) 35%,
+      rgba(220, 220, 220, 0.45) 42%,
+      rgba(240, 240, 240, 0.55) 48%,
+      rgba(255, 255, 255, 0.6) 50%,
+      rgba(240, 240, 240, 0.55) 52%,
+      rgba(220, 220, 220, 0.45) 58%,
+      rgba(192, 192, 192, 0.2) 65%,
+      transparent 75%,
+      transparent 100%
+    );
+    background-size: 400% 100%;
+    animation: shineSweep 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes shineSweep {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .shine-border {
+    box-shadow: 0 0 0 3px #a0a0a0;
+  }
+
+</style>
+
+
+
+
+

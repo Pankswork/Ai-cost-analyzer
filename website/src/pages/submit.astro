@@ -1,0 +1,98 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { categories } from '../data/tools';
+---
+
+<Layout title="Submit an AI Tool — BestFreeAIFor" description="Submit a free AI tool for review and listing">
+  <Navbar />
+  <main class="min-h-[50vh] py-12 md:py-16">
+    <div class="container-main">
+      <div class="w-full sm:w-3/4 md:w-1/2 lg:w-2/5 mx-auto">
+        <div class="text-center mb-10">
+          <h1 class="text-display-xl text-ink mb-3">Submit an AI Tool</h1>
+          <p class="text-body-lg text-body">Know a great free AI tool? Submit it for review and we may add it to the directory.</p>
+        </div>
+
+        <div class="bg-canvas border border-hairline rounded-xl p-6 sm:p-8 shadow-card">
+          <div class="space-y-5">
+            <div>
+              <label class="block text-body-sm text-ink font-medium mb-1">Tool Name *</label>
+              <input type="text" id="sub-name" class="w-full px-4 py-2.5 rounded-lg border border-hairline bg-canvas text-ink focus:outline-none focus:border-ink transition-colors" placeholder="e.g. Gemini Code Assist" required />
+            </div>
+            <div>
+              <label class="block text-body-sm text-ink font-medium mb-1">Website URL *</label>
+              <input type="url" id="sub-url" class="w-full px-4 py-2.5 rounded-lg border border-hairline bg-canvas text-ink focus:outline-none focus:border-ink transition-colors" placeholder="https://example.com" required />
+            </div>
+            <div>
+              <label class="block text-body-sm text-ink font-medium mb-1">Category</label>
+              <select id="sub-category" class="w-full px-4 py-2.5 rounded-lg border border-hairline bg-canvas text-ink focus:outline-none focus:border-ink transition-colors">
+                <option value="">Select a category</option>
+                {categories.map(cat => (
+                  <option value={cat.id}>{cat.icon} {cat.title}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label class="block text-body-sm text-ink font-medium mb-1">Why is it free and good?</label>
+              <textarea id="sub-desc" class="w-full px-4 py-2.5 rounded-lg border border-hairline bg-canvas text-ink focus:outline-none focus:border-ink transition-colors min-h-[100px]" placeholder="Briefly describe what makes this tool great and what's free about it"></textarea>
+            </div>
+            <div>
+              <label class="block text-body-sm text-ink font-medium mb-1">Your Email (optional)</label>
+              <input type="email" id="sub-email" class="w-full px-4 py-2.5 rounded-lg border border-hairline bg-canvas text-ink focus:outline-none focus:border-ink transition-colors" placeholder="We'll notify you if it's approved" />
+            </div>
+            <div id="sub-success" class="hidden bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-lg p-4 text-body-md"></div>
+            <div id="sub-error" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg p-3 text-body-sm"></div>
+            <button id="sub-submit" class="w-full bg-ink text-white dark:text-canvas font-semibold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer">
+              Submit for Review
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+import { api } from '../lib/api';
+
+document.getElementById('sub-submit')?.addEventListener('click', async () => {
+  const name = (document.getElementById('sub-name') as HTMLInputElement).value;
+  const url = (document.getElementById('sub-url') as HTMLInputElement).value;
+  const category = (document.getElementById('sub-category') as HTMLSelectElement).value;
+  const desc = (document.getElementById('sub-desc') as HTMLTextAreaElement).value;
+  const email = (document.getElementById('sub-email') as HTMLInputElement).value;
+  const errorEl = document.getElementById('sub-error')!;
+  const successEl = document.getElementById('sub-success')!;
+  const btn = document.getElementById('sub-submit') as HTMLButtonElement;
+
+  errorEl.classList.add('hidden');
+  successEl.classList.add('hidden');
+
+  if (!name || !url) {
+    errorEl.textContent = 'Tool name and URL are required';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    const result = await api.submissions.create({ name, url, category_slug: category || undefined, description: desc, submitter_email: email || undefined });
+    successEl.textContent = result.message;
+    successEl.classList.remove('hidden');
+    (document.getElementById('sub-name') as HTMLInputElement).value = '';
+    (document.getElementById('sub-url') as HTMLInputElement).value = '';
+    (document.getElementById('sub-desc') as HTMLTextAreaElement).value = '';
+    btn.textContent = 'Submitted!';
+  } catch (err: any) {
+    errorEl.textContent = err.message || 'Submission failed';
+    errorEl.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Submit for Review';
+  }
+});
+</script>

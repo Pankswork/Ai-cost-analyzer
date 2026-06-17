@@ -1,0 +1,396 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import { categories, slugify } from '../../data/tools';
+import type { Tool, Category } from '../../data/tools';
+
+export interface Props {
+  tool: Tool;
+  category: Category;
+  rank: number;
+  categoryTools: { tool: Tool; slug: string; rank: number }[];
+}
+
+export async function getStaticPaths() {
+  const paths: { params: { slug: string }; props: Props }[] = [];
+
+  for (const cat of categories) {
+    cat.tools.forEach((tool, idx) => {
+      const slug = `${cat.id}-${slugify(tool.name)}`;
+      const categoryTools = cat.tools.map((t, i) => ({
+        tool: t,
+        slug: `${cat.id}-${slugify(t.name)}`,
+        rank: i + 1,
+      }));
+      paths.push({
+        params: { slug },
+        props: { tool, category: cat, rank: idx + 1, categoryTools },
+      });
+    });
+  }
+
+  return paths;
+}
+
+const { tool, category, rank, categoryTools } = Astro.props;
+const pageTitle = `${tool.name} (2026) — Best Free AI For ${category.title}`;
+const pageDescription = `${tool.description} ${tool.freeTier}`;
+const canonicalSlug = `${category.id}-${slugify(tool.name)}`;
+const canonicalUrl = `https://bestfreeaifor.com/tool/${canonicalSlug}/`;
+const catLower = category.title.toLowerCase();
+const toolName = tool.name;
+const pageKeywords = `${toolName} free tier 2026, ${toolName} review, best free ai for ${catLower}, free ${catLower} ai tool, ${toolName} ai, ${toolName} vs, ${toolName} free vs paid, best ${catLower} ai 2026`;
+const toolBreadcrumbs = [
+  { name: 'Home', url: 'https://bestfreeaifor.com/' },
+  { name: category.title, url: `https://bestfreeaifor.com/category/${category.id}/` },
+  { name: tool.name, url: canonicalUrl },
+];
+const relatedToolCategories = categories.filter(c => c.id !== category.id).slice(0, 6);
+---
+
+<Layout title={pageTitle} description={pageDescription} canonicalUrl={canonicalUrl} keywords={pageKeywords} breadcrumbs={toolBreadcrumbs}>
+  <Navbar />
+
+  <main class="min-h-screen">
+    <div class="container-main py-12">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-body-sm text-mute mb-8">
+        <a href="/" class="no-underline text-mute hover:text-ink transition-colors">Home</a>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <a href={`/category/${category.id}`} class="no-underline text-mute hover:text-ink transition-colors">{category.title}</a>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="text-ink">{tool.name}</span>
+      </nav>
+
+      <!-- Tool Hero -->
+      <div class="bg-canvas rounded-xl border border-hairline p-8 md:p-10 mb-8 shadow-card">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-6">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="text-caption-mono text-ink bg-canvas-soft-2 px-2.5 py-1 rounded-full border border-hairline">
+                #{rank} in {category.icon} {category.title}
+              </span>
+              {tool.models && tool.models.length > 0 && (
+                <span class="text-caption-mono text-mute bg-canvas-soft-2 px-2.5 py-1 rounded-full border border-hairline">
+                  {tool.models.join(", ")}
+                </span>
+              )}
+            </div>
+            <h1 class="text-display-xl text-ink mb-2">{tool.name}</h1>
+            <p class="text-body-lg text-body">{tool.bestFor}</p>
+          </div>
+          <div class="flex gap-3 shrink-0">
+            <button id="fav-btn" data-tool-slug={canonicalSlug} class="inline-flex items-center justify-center w-10 h-10 rounded-pill-sm border border-hairline bg-canvas hover:bg-canvas-soft-2 transition-colors cursor-pointer" title="Add to favorites">
+              <svg id="fav-icon-empty" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg id="fav-icon-filled" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </button>
+            <a
+              href={`/category/${category.id}`}
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-pill-sm text-body-sm text-body border border-hairline no-underline hover:bg-canvas-soft-2 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+              Back to Category
+            </a>
+            <a
+              href={tool.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-pill-sm text-body-sm text-white dark:text-canvas bg-ink no-underline hover:opacity-90 transition-opacity"
+            >
+              Visit Website
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10v10"/><path d="M7 17 21 3"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="p-5 bg-canvas-soft rounded-lg border border-hairline mb-6">
+          <h2 class="text-display-sm text-ink mb-2">About {tool.name}</h2>
+          <p class="text-body-md text-body leading-relaxed">{tool.description}</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex items-center gap-3 p-4 bg-canvas-soft rounded-lg border border-hairline">
+            <svg class="w-5 h-5 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div>
+              <span class="text-caption-mono text-mute block">BEST FOR</span>
+              <span class="text-body-sm text-ink">{tool.bestFor}</span>
+            </div>
+          </div>
+          {tool.models && tool.models.length > 0 && (
+            <div class="flex items-center gap-3 p-4 bg-canvas-soft rounded-lg border border-hairline">
+              <svg class="w-5 h-5 shrink-0 text-violet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              <div>
+                <span class="text-caption-mono text-mute block">MODELS</span>
+                <span class="text-body-sm text-ink">{tool.models.join(", ")}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- Free vs Paid Comparison -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-canvas rounded-xl border border-hairline p-6 shadow-card">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-4 h-4 rounded-full bg-success shrink-0"></span>
+            <h2 class="text-display-sm text-ink">Free Tier</h2>
+          </div>
+          <p class="text-body-md text-body">{tool.freeTier}</p>
+        </div>
+
+        <div class="bg-canvas rounded-xl border border-hairline p-6 shadow-card">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-4 h-4 rounded-full bg-warning shrink-0"></span>
+            <h2 class="text-display-sm text-ink">Paid Alternative</h2>
+          </div>
+          <p class="text-body-md text-body">
+            {tool.paidTier ?? "No paid tier needed — completely free and open source."}
+          </p>
+        </div>
+      </div>
+
+      <!-- Pros & Cons -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-canvas rounded-xl border border-hairline p-6 shadow-card">
+          <h2 class="text-display-sm text-ink mb-4">Pros</h2>
+          <ul class="space-y-3">
+            {tool.pros.map((pro) => (
+              <li class="flex items-start gap-3 text-body-md text-body">
+                <svg class="w-5 h-5 mt-0.5 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                {pro}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="bg-canvas rounded-xl border border-hairline p-6 shadow-card">
+          <h2 class="text-display-sm text-ink mb-4">Cons</h2>
+          <ul class="space-y-3">
+            {tool.cons.map((con) => (
+              <li class="flex items-start gap-3 text-body-md text-body">
+                <svg class="w-5 h-5 mt-0.5 shrink-0 text-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                {con}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Verdict -->
+      <div class="bg-canvas rounded-xl border border-hairline p-6 shadow-card mb-12">
+        <div class="flex items-start gap-3">
+          <svg class="w-6 h-6 mt-0.5 shrink-0 text-violet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div>
+            <h2 class="text-display-sm text-ink mb-1">Verdict</h2>
+            <p class="text-body-md text-body">{tool.verdict}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="mb-8">
+        <div class="bg-canvas rounded-xl border border-hairline p-6 shadow-card" data-tool-slug={canonicalSlug}>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-display-sm text-ink">User Reviews</h2>
+            <button id="review-btn" class="px-4 py-2 rounded-lg bg-ink text-white dark:text-canvas text-body-sm hover:opacity-90 transition-opacity cursor-pointer">Write a Review</button>
+          </div>
+          <div id="review-form" class="hidden mb-6 p-4 bg-canvas-soft rounded-lg border border-hairline">
+            <p class="text-body-sm text-body mb-3" id="review-auth-msg"><a href="/login" class="text-ink underline">Sign in</a> to leave a review.</p>
+            <div id="review-auth-form" class="hidden">
+              <div class="flex gap-2 mb-3">
+                <button class="star-btn text-2xl text-mute hover:text-yellow-500 transition-colors cursor-pointer bg-transparent border-none" data-rating="1">★</button>
+                <button class="star-btn text-2xl text-mute hover:text-yellow-500 transition-colors cursor-pointer bg-transparent border-none" data-rating="2">★</button>
+                <button class="star-btn text-2xl text-mute hover:text-yellow-500 transition-colors cursor-pointer bg-transparent border-none" data-rating="3">★</button>
+                <button class="star-btn text-2xl text-mute hover:text-yellow-500 transition-colors cursor-pointer bg-transparent border-none" data-rating="4">★</button>
+                <button class="star-btn text-2xl text-mute hover:text-yellow-500 transition-colors cursor-pointer bg-transparent border-none" data-rating="5">★</button>
+              </div>
+              <textarea id="review-body" class="w-full px-3 py-2 rounded-lg border border-hairline bg-canvas text-ink focus:outline-none min-h-[80px] text-body-sm" placeholder="Share your experience with this tool..."></textarea>
+              <button id="review-submit" class="mt-2 px-4 py-2 rounded-lg bg-ink text-white dark:text-canvas text-body-sm hover:opacity-90 cursor-pointer">Submit Review</button>
+              <p id="review-status" class="text-body-sm text-body mt-2"></p>
+            </div>
+          </div>
+          <div id="reviews-list" class="space-y-4">
+            <p class="text-body-sm text-body">Loading reviews...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Tools in This Category -->
+      <div class="mb-8">
+        <h2 class="text-display-lg text-ink mb-6">Other {category.title} Tools</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categoryTools.filter(t => t.slug !== canonicalSlug).map(({ tool: other, slug, rank: r }) => (
+            <a
+              href={`/tool/${slug}`}
+              class="bg-canvas rounded-lg border border-hairline p-5 no-underline hover:shadow-card-hover transition-shadow duration-200 block"
+            >
+              <div class="flex items-center gap-2 mb-2">
+                <span class="w-6 h-6 rounded-full bg-ink text-white dark:text-canvas text-caption-mono font-bold flex items-center justify-center text-[10px]">
+                  {r}
+                </span>
+                <span class="text-body-sm text-mute">{category.title}</span>
+              </div>
+              <h3 class="text-display-sm text-ink mb-1">{other.name}</h3>
+              <p class="text-body-sm text-body line-clamp-2">{other.bestFor}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Related Categories -->
+      <div class="mb-8">
+        <span class="text-caption-mono text-mute block mb-4 text-center">BROWSE MORE CATEGORIES</span>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          {relatedToolCategories.map(cat => (
+            <a
+              href={`/category/${cat.id}`}
+              class="flex flex-col items-center gap-1.5 bg-canvas border border-hairline rounded-lg p-4 no-underline hover:shadow-card-hover transition-shadow duration-200 text-center"
+            >
+              <span class="text-2xl">{cat.icon}</span>
+              <span class="text-body-sm text-ink font-medium">{cat.title}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- CTA Back -->
+      <div class="text-center py-8">
+        <a
+          href={`/category/${category.id}`}
+          class="inline-flex items-center gap-2 px-6 py-3 rounded-pill-sm text-body-md text-white dark:text-canvas bg-ink no-underline hover:opacity-90 transition-opacity"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          Browse All {category.title} Tools
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": tool.name,
+    "description": tool.description,
+    "url": tool.url,
+    "applicationCategory": "AI Tool",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": tool.freeTier
+    }
+  })}>
+  </script>
+
+  <Footer />
+  <script>
+  (function() {
+    const el = document.querySelector('[data-tool-slug]');
+    if (!el) return;
+    const slug = el.dataset.toolSlug || '';
+    if (!slug) return;
+    const reviewsList = document.getElementById('reviews-list');
+    const reviewBtn = document.getElementById('review-btn');
+    const reviewForm = document.getElementById('review-form');
+    const authMsg = document.getElementById('review-auth-msg');
+    const authForm = document.getElementById('review-auth-form');
+    if (!reviewsList || !reviewBtn) return;
+
+    async function loadReviews() {
+      try {
+        const res = await fetch('/api/tools/' + slug.split('/').pop() + '/reviews');
+        if (!res.ok) throw new Error('Failed');
+        const reviews = await res.json();
+        if (reviews.length === 0) { reviewsList.innerHTML = '<p class="text-body-sm text-body">No reviews yet. Be the first!</p>'; return; }
+        reviewsList.innerHTML = reviews.map(function(r) {
+          var stars = '';
+          for (var i = 0; i < 5; i++) stars += i < r.rating ? '★' : '☆';
+          return '<div class="p-4 rounded-lg border border-hairline"><div class="flex items-center gap-2 mb-1"><span class="text-yellow-500">' + stars + '</span><span class="text-body-sm text-body">' + (r.user_email || 'Anonymous') + '</span><span class="text-caption text-mute ml-auto">' + (r.created_at ? new Date(r.created_at).toLocaleDateString() : '') + '</span></div>' + (r.body ? '<p class="text-body-sm text-body mt-1">' + r.body + '</p>' : '') + '</div>';
+        }).join('');
+      } catch { reviewsList.innerHTML = '<p class="text-body-sm text-body">Failed to load reviews.</p>'; }
+    }
+    loadReviews();
+
+    reviewBtn.addEventListener('click', function() {
+      reviewForm.classList.toggle('hidden');
+      var token = localStorage.getItem('auth_token');
+      if (token) { authMsg.classList.add('hidden'); authForm.classList.remove('hidden'); }
+      else { authMsg.classList.remove('hidden'); authForm.classList.add('hidden'); }
+    });
+
+    var selectedRating = 0;
+    document.querySelectorAll('.star-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        selectedRating = parseInt(this.dataset.rating);
+        document.querySelectorAll('.star-btn').forEach(function(s, i) {
+          s.style.color = i < selectedRating ? '#eab308' : '#9ca3af';
+        });
+      });
+    });
+
+    document.getElementById('review-submit')?.addEventListener('click', async function() {
+      if (!selectedRating) { document.getElementById('review-status').textContent = 'Please select a rating'; return; }
+      var body = document.getElementById('review-body').value;
+      var token = localStorage.getItem('auth_token');
+      if (!token) { document.getElementById('review-status').textContent = 'Please sign in first'; return; }
+      try {
+        var res = await fetch('/api/tools/' + slug.split('/').pop() + '/reviews', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ rating: selectedRating, body: body || undefined }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById('review-status').textContent = 'Review submitted!';
+        document.getElementById('review-body').value = '';
+        reviewForm.classList.add('hidden');
+        await loadReviews();
+      } catch { document.getElementById('review-status').textContent = 'Failed to submit review'; }
+    });
+  })();
+  </script>
+
+  <script>
+  import { api } from '../../lib/api';
+
+  const favBtn = document.getElementById('fav-btn');
+  if (favBtn) {
+    const slug = favBtn.dataset.toolSlug || '';
+    const emptyIcon = document.getElementById('fav-icon-empty')!;
+    const filledIcon = document.getElementById('fav-icon-filled')!;
+    const token = localStorage.getItem('auth_token');
+
+    if (token && slug) {
+      api.favorites.check(slug).then(res => {
+        if (res.favorited) {
+          emptyIcon.classList.add('hidden');
+          filledIcon.classList.remove('hidden');
+          favBtn.classList.add('text-yellow-500');
+        }
+      }).catch(() => {});
+    }
+
+    favBtn.addEventListener('click', async () => {
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+      const isFav = !filledIcon.classList.contains('hidden');
+      favBtn.disabled = true;
+      try {
+        if (isFav) {
+          await api.favorites.removeBySlug(slug);
+          filledIcon.classList.add('hidden');
+          emptyIcon.classList.remove('hidden');
+          favBtn.classList.remove('text-yellow-500');
+        } else {
+          await api.favorites.addBySlug(slug);
+          emptyIcon.classList.add('hidden');
+          filledIcon.classList.remove('hidden');
+          favBtn.classList.add('text-yellow-500');
+        }
+      } catch {}
+      favBtn.disabled = false;
+    });
+  }
+  </script>
+  </Layout>

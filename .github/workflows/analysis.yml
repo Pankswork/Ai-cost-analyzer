@@ -1,0 +1,32 @@
+name: Manual Cost Analysis
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install boto3 httpx
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Run cost analysis
+        run: |
+          curl -X POST http://backend:8000/api/analysis/run \
+            -H "Authorization: Bearer $ADMIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"triggered_by": "github-actions"}'
+        env:
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}

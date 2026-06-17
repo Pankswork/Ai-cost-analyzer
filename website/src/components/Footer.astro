@@ -1,0 +1,99 @@
+---
+import { categories } from '../data/tools';
+
+const sorted = [...categories].sort((a, b) => a.title.localeCompare(b.title));
+const third = Math.ceil(sorted.length / 3);
+const col1 = sorted.slice(0, third);
+const col2 = sorted.slice(third, third * 2);
+const col3 = sorted.slice(third * 2);
+const columnLabels = ["Categories", "More", "Specialized"];
+---
+
+<footer id="footer" class="bg-canvas border-t border-hairline pt-16 pb-8 mt-24">
+  <div class="container-main">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+      <div class="col-span-2 md:col-span-1">
+        <a href="/" class="flex items-center gap-2 no-underline mb-4">
+          <img src="/favicon.svg" alt="Best Free AI For" class="w-7 h-7" />
+          <span class="text-body-sm-strong text-ink font-medium tracking-tight">BestFreeAIFor</span>
+        </a>
+        <p class="text-body-sm text-body leading-relaxed mb-4">
+          The honest AI tool directory. Zero marketing hype — just real comparisons
+          to help you find the best free AI for any task.
+        </p>
+        <div id="newsletter-form">
+          <label class="text-caption-mono text-mute block mb-2">Stay Updated</label>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="email" id="newsletter-email" placeholder="your@email.com" class="w-full sm:flex-1 px-3 py-2 text-body-sm border border-hairline rounded-lg bg-canvas-soft text-ink placeholder:text-mute focus:outline-none focus:border-ink" />
+            <button id="newsletter-submit" class="w-full sm:w-auto px-4 py-2 bg-ink text-white dark:text-canvas text-body-sm rounded-lg hover:opacity-90 transition-opacity cursor-pointer shrink-0">Subscribe</button>
+          </div>
+          <p id="newsletter-status" class="text-caption-mono text-mute mt-1"></p>
+        </div>
+      </div>
+
+      <div>
+        <span class="text-caption-mono text-mute block mb-4">{columnLabels[0]}</span>
+        <ul class="space-y-2.5">
+          {col1.map((cat) => (
+            <li><a href={`/category/${cat.id}`} class="text-body-sm text-body no-underline hover:text-ink transition-colors">{cat.title}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <span class="text-caption-mono text-mute block mb-4">{columnLabels[1]}</span>
+        <ul class="space-y-2.5">
+          {col2.map((cat) => (
+            <li><a href={`/category/${cat.id}`} class="text-body-sm text-body no-underline hover:text-ink transition-colors">{cat.title}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <span class="text-caption-mono text-mute block mb-4">{columnLabels[2]}</span>
+        <ul class="space-y-2.5">
+          {col3.map((cat) => (
+            <li><a href={`/category/${cat.id}`} class="text-body-sm text-body no-underline hover:text-ink transition-colors">{cat.title}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <span class="text-caption-mono text-mute block mb-4">Company</span>
+        <ul class="space-y-2.5">
+          <li><a href="/about" class="text-body-sm text-body no-underline hover:text-ink transition-colors">About</a></li>
+          <li><a href="/privacy" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Privacy</a></li>
+          <li><a href="/terms" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Terms</a></li>
+          <li><a href="/contact" class="text-body-sm text-body no-underline hover:text-ink transition-colors">Contact</a></li>
+          <li class="mt-2"><a href="/submit" class="text-body-sm text-ink underline">Submit a Tool</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pt-6 border-t border-hairline flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-caption text-mute">
+        &copy; {new Date().getFullYear()} BestFreeAIFor.com — The Ultimate AI Tool Directory
+      </p>
+      <p class="text-caption text-mute">
+        Domain: bestfreeaifor.com
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+import { api } from '../lib/api';
+
+document.getElementById('newsletter-submit')?.addEventListener('click', async () => {
+  const email = (document.getElementById('newsletter-email') as HTMLInputElement).value;
+  const status = document.getElementById('newsletter-status')!;
+  if (!email || !email.includes('@')) { status.textContent = 'Please enter a valid email'; return; }
+  try {
+    await api.newsletter(email);
+    status.textContent = 'Subscribed! Check your inbox.';
+    (document.getElementById('newsletter-email') as HTMLInputElement).value = '';
+  } catch {
+    status.textContent = 'Subscription failed. Try again.';
+  }
+});
+</script>

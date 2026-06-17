@@ -1,0 +1,48 @@
+name: "Push Docker Images"
+description: "Build and push images to ECR and DockerHub"
+
+inputs:
+  image-name:
+    description: "Name of the image (backend/frontend)"
+    required: true
+  build-context:
+    description: "Docker build context directory (defaults to ./<image-name>)"
+    required: false
+    default: ""
+  dockerhub-username:
+    description: "DockerHub username"
+    required: true
+  dockerhub-token:
+    description: "DockerHub access token"
+    required: true
+  ecr-registry:
+    description: "ECR registry URL (account.dkr.ecr.region.amazonaws.com)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build image
+      shell: bash
+      run: |
+        CONTEXT="${{ inputs.build-context }}"
+        if [ -z "$CONTEXT" ]; then
+          CONTEXT="./${{ inputs.image-name }}"
+        fi
+        docker build -t ${{ inputs.image-name }}:latest "$CONTEXT"
+        docker tag ${{ inputs.image-name }}:latest ${{ inputs.image-name }}:${{ github.sha }}
+
+    - name: Push to DockerHub
+      shell: bash
+      run: |
+        echo "${{ inputs.dockerhub-token }}" | docker login -u "${{ inputs.dockerhub-username }}" --password-stdin
+        docker tag ${{ inputs.image-name }}:latest ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:latest
+        docker tag ${{ inputs.image-name }}:${{ github.sha }} ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:${{ github.sha }}
+        docker push ${{ inputs.dockerhub-username }}/${{ inputs.image-name }} --all-tags
+
+    - name: Push to ECR
+      shell: bash
+      run: |
+        docker tag ${{ inputs.image-name }}:latest ${{ inputs.ecr-registry }}/${{ inputs.image-name }}:latest
+        docker tag ${{ inputs.image-name }}:${{ github.sha }} ${{ inputs.ecr-registry }}/${{ inputs.image-name }}:${{ github.sha }}
+        docker push ${{ inputs.ecr-registry }}/${{ inputs.image-name }} --all-tags

@@ -1,0 +1,73 @@
+---
+import { faqData } from '../data/faq';
+
+export interface Props {
+  categoryId: string;
+}
+
+const { categoryId } = Astro.props;
+const categoryFAQGroups = faqData.filter((faq) => faq.categoryId === categoryId);
+
+const allQuestions = categoryFAQGroups.flatMap((g) => g.questions);
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": allQuestions.map((q) => ({
+    "@type": "Question",
+    "name": q.question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": q.answer
+    }
+  }))
+};
+---
+
+{
+  categoryFAQGroups.length > 0 && (
+    <section class="py-16 md:py-24 bg-canvas border-t border-hairline scroll-mt-20">
+      <div class="container-main">
+        <div class="text-center mb-12">
+          <span class="text-caption-mono text-mute block mb-3">FAQ</span>
+          <h2 class="text-display-lg text-ink mb-4 text-balance">Frequently Asked Questions</h2>
+        </div>
+
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+          {
+            categoryFAQGroups.map((group) => (
+              <>
+                {
+                  group.title && (
+                    <div class="col-span-full">
+                      <h3 class="text-display-sm text-ink mb-2">{group.title}</h3>
+                      <hr class="border-hairline mb-4" />
+                    </div>
+                  )
+                }
+                {
+                  group.questions.map((faq, idx) => (
+                    <details class="group bg-canvas-soft rounded-lg border border-hairline overflow-hidden cursor-pointer self-start">
+                      <summary class="flex items-center justify-between px-4 py-3 text-body-md text-ink font-medium list-none [&::-webkit-details-marker]:none">
+                        <span class="pr-3">{faq.question}</span>
+                        <svg class="w-4 h-4 text-mute shrink-0 transition-transform duration-200 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                      </summary>
+                      <div class="px-4 pb-3 text-body-md text-body leading-relaxed border-t border-hairline pt-3">
+                        {faq.answer}
+                      </div>
+                    </details>
+                  ))
+                }
+              </>
+            ))
+          }
+        </div>
+      </div>
+
+      <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)}>
+      </script>
+    </section>
+  )
+}

@@ -1,0 +1,64 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="My Favorites — BestFreeAIFor" description="Your saved AI tools">
+  <Navbar />
+  <main class="min-h-[60vh] py-16">
+    <div class="container-main">
+      <div id="auth-guard" class="hidden">
+        <p class="text-center text-body-lg text-body py-16">Please <a href="/login" class="text-ink underline">sign in</a> to view your favorites.</p>
+      </div>
+      <div id="favorites-content" class="hidden">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-display-xl text-ink">My Favorites</h1>
+          <a href="/dashboard" class="text-body-sm text-body underline">Back to Dashboard</a>
+        </div>
+        <div id="favorites-list" class="space-y-4">
+          <p class="text-body-md text-body">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+import { isAuthenticated, initAuth } from '../lib/auth';
+import { api } from '../lib/api';
+
+initAuth().then(async () => {
+  if (!isAuthenticated()) {
+    document.getElementById('auth-guard')!.classList.remove('hidden');
+    return;
+  }
+  document.getElementById('favorites-content')!.classList.remove('hidden');
+  const container = document.getElementById('favorites-list')!;
+  try {
+    const favs = await api.favorites.list();
+    if (favs.length === 0) {
+      container.innerHTML = '<div class="bg-canvas border border-hairline rounded-xl p-8 text-center"><p class="text-body-md text-body mb-4">No favorites yet.</p><a href="/#categories" class="text-ink underline">Browse tools</a></div>';
+      return;
+    }
+    container.innerHTML = favs.map(f =>
+      `<div class="bg-canvas border border-hairline rounded-xl p-5 shadow-card flex items-center justify-between">
+        <a href="/tool/${f.tool_slug}" class="no-underline">
+          <h3 class="text-display-sm text-ink">${f.tool_name}</h3>
+          <p class="text-body-sm text-body">Saved ${new Date(f.created_at).toLocaleDateString()}</p>
+        </a>
+        <button class="remove-fav text-body-sm text-red-500 hover:text-red-700 transition-colors cursor-pointer bg-transparent border-none" data-id="${f.tool_id}">Remove</button>
+      </div>`
+    ).join('');
+    container.querySelectorAll('.remove-fav').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await api.favorites.remove(Number((btn as HTMLElement).dataset.id));
+        location.reload();
+      });
+    });
+  } catch {
+    container.innerHTML = '<p class="text-body-md text-red-500">Failed to load favorites.</p>';
+  }
+});
+</script>

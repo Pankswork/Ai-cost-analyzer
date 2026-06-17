@@ -1,0 +1,117 @@
+---
+import '../styles/global.css';
+
+export interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
+export interface Props {
+  title: string;
+  description: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  keywords?: string;
+  breadcrumbs?: BreadcrumbItem[];
+}
+
+const { title, description, canonicalUrl, ogImage, ogImageAlt, keywords, breadcrumbs } = Astro.props;
+const siteUrl = 'https://bestfreeaifor.com';
+const defaultKeywords = 'best free ai for, best free ai tools 2026, free ai tools, best ai tools, best free ai video generators 2026, best free ai image generator 2026, best free ai image to video tools 2026, best ai for coding 2026, best ai for business, best ai for writing essays, best ai, free ai for image, free ai for video, free ai for coding, free ai chatbot, best free llm 2026, ai tools comparison, ai tool reviews';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Free AI's" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <title>{title}</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3PVC56Z2L3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3PVC56Z2L3');
+    </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7747384540526802" crossorigin="anonymous"></script>
+    <meta name="description" content={description} />
+    <meta name="keywords" content={keywords || defaultKeywords} />
+    <meta name="generator" content={Astro.generator} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl || siteUrl} />
+    <meta property="og:site_name" content="BestFreeAIFor" />
+    <meta property="og:locale" content="en_US" />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:width" content="1200" />}
+    {ogImage && <meta property="og:image:height" content="630" />}
+    {ogImageAlt && <meta property="og:image:alt" content={ogImageAlt} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    <meta name="twitter:site" content="@bestfreeaifor" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "BestFreeAIFor",
+        "url": "{siteUrl}",
+        "description": "Your online ruler for measuring and comparing the best free AI tools of 2026. Honest reviews and curated comparisons across image generation, video creation, coding, writing, business, and more.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "{siteUrl}/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "BestFreeAIFor",
+        "url": "{siteUrl}",
+        "description": "The ultimate AI tool directory providing honest comparisons of free AI tools.",
+        "sameAs": [
+          "https://twitter.com/bestfreeaifor"
+        ]
+      }
+    </script>
+    {breadcrumbs && breadcrumbs.length > 0 && (
+      <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbs.map((item, i) => ({
+          "@type": "ListItem",
+          "position": i + 1,
+          "name": item.name,
+          "item": item.url
+        }))
+      })}>
+      </script>
+    )}
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (stored === "dark" || (!stored && prefersDark)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+  </head>
+  <body class="bg-canvas-soft font-sans text-ink antialiased">
+    <slot />
+  </body>
+</html>

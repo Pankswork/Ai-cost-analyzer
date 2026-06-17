@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bestfreeaifor.com/sitemap-index.xml

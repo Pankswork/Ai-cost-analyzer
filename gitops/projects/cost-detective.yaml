@@ -1,0 +1,29 @@
+# ArgoCD Project — scopes and restricts what Applications can do
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: cost-detective
+  namespace: argocd
+spec:
+  description: "AI Cloud Cost Detective — GitOps project"
+
+  # Allowed destinations — restrict to specific cluster + namespace
+  destinations:
+    - namespace: cost-detective
+      server: https://kubernetes.default.svc
+    - namespace: monitoring
+      server: https://kubernetes.default.svc
+
+  # Allowed source repositories — only our repo
+  sourceRepos:
+    - https://github.com/Pankswork/Ai-cost-analyzer.git
+    - https://github.com/your-org/ai-cost-analyzer
+
+  # Allowed cluster-scoped resources
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: "rbac.authorization.k8s.io"
+      kind: ClusterRole
+    - group: "rbac.authorization.k8s.io"
+      kind: ClusterRoleBinding

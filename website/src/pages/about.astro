@@ -1,0 +1,87 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const siteUrl = 'https://bestfreeaifor.com';
+const email = 'devpanks@gmail.com';
+const aboutBreadcrumbs = [
+  { name: 'Home', url: `${siteUrl}/` },
+  { name: 'About', url: `${siteUrl}/about/` },
+];
+---
+
+<Layout
+  title="About Us — BestFreeAIFor"
+  description="About BestFreeAIFor.com — the honest AI tool directory. We help you find the best free AI tools for 2026 with unbiased comparisons and clear verdicts."
+  canonicalUrl={`${siteUrl}/about/`}
+  keywords="best free ai for, bestfreeaifor about, free ai tool directory, ai tool reviews, unbiased ai comparisons, best ai tools directory"
+  breadcrumbs={aboutBreadcrumbs}
+>
+  <Navbar />
+
+  <main class="min-h-screen">
+    <div class="container-main py-12">
+      <nav class="flex items-center gap-2 text-body-sm text-mute mb-8">
+        <a href="/" class="no-underline text-mute hover:text-ink transition-colors">Home</a>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="text-ink">About Us</span>
+      </nav>
+
+      <div class="text-center mb-12">
+          <span class="text-caption-mono text-mute block mb-3">ABOUT</span>
+          <h1 class="text-display-xl text-ink mb-4">About BestFreeAIFor</h1>
+          <p class="text-body-lg text-body mx-auto text-balance">The honest AI tool directory — zero marketing hype, just real comparisons.</p>
+        </div>
+
+        <div class="space-y-8 text-body-md text-body leading-relaxed">
+          <section>
+            <h2 class="text-display-sm text-ink mb-3">Our Mission</h2>
+            <p>BestFreeAIFor.com was created to solve a simple problem: finding the best free AI tools is overwhelming. New tools launch daily, free tiers change constantly, and most comparison sites are full of affiliate-biased reviews or outdated information.</p>
+            <p class="mt-3">We cut through the noise. Every tool on our site has been tested, compared, and reviewed with a single question in mind: <strong>what do you actually get for free?</strong></p>
+          </section>
+
+          <section>
+            <h2 class="text-display-sm text-ink mb-3">Why We're Different</h2>
+            <ul class="list-disc pl-6 space-y-2">
+              <li><strong>Honest Affiliate Reviews:</strong> We may earn commissions through affiliate links, but our rankings are based on real testing and independent evaluation — never paid placements.</li>
+              <li><strong>Free-First Focus:</strong> We evaluate what you get at zero cost — limits, watermarks, commercial rights, and all.</li>
+              <li><strong>Honest Verdicts:</strong> Each tool gets a clear verdict. We tell you when a free tier isn't good enough.</li>
+              <li><strong>Regularly Updated:</strong> AI changes fast. We continuously update our comparisons to reflect the latest free tiers and model releases.</li>
+              <li><strong>Comprehensive Coverage:</strong> 26+ categories covering everything from image generation to legal research.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 class="text-display-sm text-ink mb-3">What We Cover</h2>
+            <p>Our directory spans 26+ categories including AI chatbots, coding assistants, image generators, video creation, essay writing, business tools, music generation, math solvers, research assistants, gaming tools, healthcare AI, legal research, and more. We focus exclusively on tools with legitimate free tiers.</p>
+          </section>
+
+          <section>
+            <h2 class="text-display-sm text-ink mb-3">How We Review</h2>
+            <p class="mb-3">Our review process evaluates each tool on:</p>
+            <ol class="list-decimal pl-6 space-y-2">
+              <li><strong>Free Tier Quality:</strong> What features, limits, and restrictions apply at zero cost?</li>
+              <li><strong>Daily/Monthly Caps:</strong> How many generations, messages, or credits do you get?</li>
+              <li><strong>Watermark Policy:</strong> Is there a watermark on free output?</li>
+              <li><strong>Commercial Rights:</strong> Can you use outputs for business purposes?</li>
+              <li><strong>Model Quality:</strong> How does the underlying AI model perform?</li>
+              <li><strong>User Experience:</strong> Is the interface intuitive and accessible?</li>
+            </ol>
+          </section>
+
+          <section>
+            <h2 class="text-display-sm text-ink mb-3">Our Commitment</h2>
+            <p>We are committed to providing accurate, up-to-date, and honest information. If a free tier changes or a tool removes its free option, we update our site promptly. Some of the links on our site are affiliate links — we may earn a small commission if you make a purchase through them, at no extra cost to you. Rest assured, our reviews and recommendations are always based on genuine evaluation, not affiliate incentives.</p>
+          </section>
+
+          <section>
+            <h2 class="text-display-sm text-ink mb-3">Contact</h2>
+            <p>Questions, suggestions, or feedback? We'd love to hear from you. <a href={`mailto:${email}`} class="text-link underline">Email Me</a>.</p>
+          </section>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

@@ -1,0 +1,132 @@
+---
+import { categories } from '../data/tools';
+const categoryNames = categories.map(c => c.title.toLowerCase()).sort();
+---
+
+
+<style>
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .animate-blink {
+    animation: blink 0.6s step-end infinite;
+  }
+  .animate-blink-pause {
+    animation: none;
+    opacity: 1;
+  }
+</style>
+
+<section class="relative overflow-hidden bg-canvas pt-24 pb-16 md:pt-32 md:pb-24">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <svg class="w-full h-full opacity-60" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="mesh-grad-1" cx="20%" cy="30%" r="50%">
+          <stop offset="0%" stop-color="#007cf0" stop-opacity="0.4" />
+          <stop offset="50%" stop-color="#00dfd8" stop-opacity="0.15" />
+          <stop offset="100%" stop-color="#007cf0" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="mesh-grad-2" cx="80%" cy="20%" r="50%">
+          <stop offset="0%" stop-color="#7928ca" stop-opacity="0.35" />
+          <stop offset="50%" stop-color="#ff0080" stop-opacity="0.12" />
+          <stop offset="100%" stop-color="#7928ca" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="mesh-grad-3" cx="50%" cy="80%" r="50%">
+          <stop offset="0%" stop-color="#ff4d4d" stop-opacity="0.25" />
+          <stop offset="50%" stop-color="#f9cb28" stop-opacity="0.1" />
+          <stop offset="100%" stop-color="#ff4d4d" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="1440" height="800" fill="url(#mesh-grad-1)" />
+      <rect width="1440" height="800" fill="url(#mesh-grad-2)" />
+      <rect width="1440" height="800" fill="url(#mesh-grad-3)" />
+    </svg>
+  </div>
+
+  <div class="container-main relative z-10 text-center">
+    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-canvas-soft border border-hairline text-caption-mono text-mute mb-8">
+      <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+      Best free AI tools for 2026 — updated daily
+    </div>
+
+    <h1 class="text-display-xl text-ink mb-6 text-balance">
+      Best Free AI For&nbsp;<span id="typed-label" class="relative whitespace-nowrap text-gradient-develop-start">what you need</span><span id="cursor" class="inline-block w-[2px] h-[0.8em] bg-ink dark:bg-canvas ml-0.5 animate-blink translate-y-[2px]"></span>&nbsp;2026
+    </h1>
+
+    <p class="text-body-lg text-body mb-10 text-balance">
+      Discover the best free AI tools and websites for 2026. Curated comparisons,
+      honest reviews, and zero marketing hype — just the tools that actually work.
+    </p>
+
+    <div class="flex items-center justify-center gap-3">
+      <a href="#categories" class="inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-ink text-white dark:text-canvas text-button-lg no-underline transition-opacity hover:opacity-90">
+        Explore Tools
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <a href="#how-it-works" class="inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-canvas text-ink text-button-lg border border-hairline no-underline transition-colors hover:bg-canvas-soft-2">
+        How It Works
+      </a>
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ categoryNames }}>
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const label = document.getElementById('typed-label');
+  const cursor = document.getElementById('cursor');
+
+  function randomSpeed(base) {
+    return base + Math.random() * 50;
+  }
+
+  async function typeText(text) {
+    label.textContent = '';
+    for (let i = 0; i < text.length; i++) {
+      label.textContent += text[i];
+      await sleep(randomSpeed(60));
+    }
+  }
+
+  async function deleteText() {
+    while (label.textContent.length > 0) {
+      label.textContent = label.textContent.slice(0, -1);
+      await sleep(randomSpeed(25));
+    }
+  }
+
+  async function blinkTimes(n) {
+    cursor.classList.remove('animate-blink');
+    for (let i = 0; i < n * 2; i++) {
+      cursor.style.visibility = i % 2 === 0 ? 'hidden' : 'visible';
+      await sleep(400);
+    }
+    cursor.style.visibility = 'visible';
+    cursor.classList.add('animate-blink');
+  }
+
+  async function main() {
+    await sleep(800);
+
+    // Phase 1: Type "what you need"
+    await typeText('what you need');
+    await sleep(600);
+
+    // Phase 2: Blink cursor 2 times
+    await blinkTimes(2);
+    await sleep(400);
+
+    // Phase 3: Cycle through categories
+    let index = 0;
+    while (true) {
+      const word = categoryNames[index % categoryNames.length];
+      await deleteText();
+      await sleep(200);
+      await typeText(word);
+      await sleep(3000);
+      index++;
+    }
+  }
+
+  main();
+</script>

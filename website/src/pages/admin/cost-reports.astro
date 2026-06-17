@@ -1,0 +1,72 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout title="Cost Reports — Admin">
+  <Navbar />
+  <main class="min-h-screen py-16">
+    <div class="container-main">
+      <div id="auth-guard" class="hidden"><p class="text-center py-16">Access denied.</p></div>
+      <div id="admin-content" class="hidden">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-display-xl text-ink">Cost Analysis Reports</h1>
+          <a href="/admin" class="text-body-sm text-body underline">Back to Admin</a>
+        </div>
+        <div class="mb-6">
+          <button id="run-analysis-btn" class="px-6 py-2.5 rounded-lg bg-ink text-white dark:text-canvas font-medium hover:opacity-90 transition-opacity cursor-pointer">
+            Run Cost Analysis Now
+          </button>
+        </div>
+        <div class="space-y-4" id="reports-list"><p class="text-body-md text-body">Loading...</p></div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+import { isAdmin, initAuth } from '../../lib/auth';
+import { api } from '../../lib/api';
+
+initAuth().then(async () => {
+  if (!isAdmin()) { document.getElementById('auth-guard')!.classList.remove('hidden'); return; }
+  document.getElementById('admin-content')!.classList.remove('hidden');
+
+  document.getElementById('run-analysis-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('run-analysis-btn') as HTMLButtonElement;
+    btn.disabled = true; btn.textContent = 'Running...';
+    try {
+      await api.analysis.run();
+      btn.textContent = 'Started!';
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'Run Cost Analysis Now'; }, 3000);
+      loadReports();
+    } catch { btn.disabled = false; btn.textContent = 'Failed - try again'; }
+  });
+
+  async function loadReports() {
+    const reports = await api.analysis.reports();
+    const container = document.getElementById('reports-list')!;
+    if (reports.length === 0) { container.innerHTML = '<p class="text-body-md text-body">No reports yet.</p>'; return; }
+    container.innerHTML = reports.map(r => `
+      <a href="/admin/cost-reports/${r.id}" class="block no-underline">
+        <div class="bg-canvas border border-hairline rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-caption-mono text-mute">${r.created_at} ${r.completed_at ? '— completed ' + r.completed_at : ''}</span>
+              <div class="flex gap-4 mt-2">
+                <span class="text-body-sm"><strong>${r.total_resources}</strong> resources</span>
+                <span class="text-body-sm"><strong>${r.total_recommendations}</strong> issues</span>
+                <span class="text-body-sm"><strong>$${r.total_estimated_savings.toFixed(2)}</strong>/mo savings</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-caption-mono ${r.status === 'completed' ? 'bg-green-100 text-green-800' : r.status === 'running' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">${r.status}</span>
+          </div>
+        </div>
+      </a>
+    `).join('');
+  }
+  loadReports();
+});
+</script>

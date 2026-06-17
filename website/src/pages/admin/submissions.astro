@@ -1,0 +1,77 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout title="Submissions — Admin">
+  <Navbar />
+  <main class="min-h-screen py-16">
+    <div class="container-main">
+      <div id="auth-guard" class="hidden"><p class="text-center py-16">Access denied.</p></div>
+      <div id="admin-content" class="hidden">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-display-xl text-ink">Tool Submissions</h1>
+          <a href="/admin" class="text-body-sm text-body underline">Back to Admin</a>
+        </div>
+        <div class="space-y-4" id="submissions-list">
+          <p class="text-body-md text-body">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+import { isAdmin, initAuth } from '../../lib/auth';
+import { api } from '../../lib/api';
+
+initAuth().then(async () => {
+  if (!isAdmin()) {
+    document.getElementById('auth-guard')!.classList.remove('hidden');
+    return;
+  }
+  document.getElementById('admin-content')!.classList.remove('hidden');
+  const container = document.getElementById('submissions-list')!;
+
+  async function load() {
+    const subs = await api.admin.submissions();
+    if (subs.length === 0) {
+      container.innerHTML = '<p class="text-body-md text-body">No submissions yet.</p>';
+      return;
+    }
+    container.innerHTML = subs.map(s => `
+      <div class="bg-canvas border border-hairline rounded-xl p-6 shadow-card">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-display-sm text-ink">${s.name}</h3>
+            <p class="text-body-sm text-body mt-1">${s.description || 'No description'} — <a href="${s.url}" target="_blank" class="underline">${s.url}</a></p>
+            ${s.submitter_email ? `<p class="text-body-sm text-body mt-1">Submitted by: ${s.submitter_email}</p>` : ''}
+            <span class="inline-block mt-2 px-2 py-0.5 rounded-full text-caption-mono ${s.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : s.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${s.status}</span>
+          </div>
+          ${s.status === 'pending' ? `
+          <div class="flex gap-2">
+            <button class="approve-btn px-4 py-1.5 rounded-lg bg-green-600 text-white text-body-sm cursor-pointer hover:opacity-90" data-id="${s.id}">Approve</button>
+            <button class="reject-btn px-4 py-1.5 rounded-lg bg-red-600 text-white text-body-sm cursor-pointer hover:opacity-90" data-id="${s.id}">Reject</button>
+          </div>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.approve-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await api.admin.approveSubmission(Number((btn as HTMLElement).dataset.id));
+        load();
+      });
+    });
+    container.querySelectorAll('.reject-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await api.admin.rejectSubmission(Number((btn as HTMLElement).dataset.id));
+        load();
+      });
+    });
+  }
+  load();
+});
+</script>

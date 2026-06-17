@@ -1,0 +1,13 @@
+# Backend ConfigMap — non-sensitive configuration
+# Sensitive values go in Secrets (managed by External Secrets Operator)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: cost-detective
+data:
+  APP_ENVIRONMENT: "production"
+  APP_AWS_REGION: "us-east-1"
+  APP_ZEN_MODEL: "zen-1"
+  APP_JWT_ALGORITHM: "HS256"
+  APP_JWT_EXPIRATION_MINUTES: "60"

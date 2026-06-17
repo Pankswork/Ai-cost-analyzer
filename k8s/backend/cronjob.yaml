@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cost-analysis
+  namespace: cost-detective
+  labels:
+    app: cost-analysis
+    component: cronjob
+spec:
+  schedule: "0 5 * * *"
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          serviceAccountName: backend
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            fsGroup: 1001
+          restartPolicy: Never
+          containers:
+            - name: analysis-runner
+              image: backend:latest
+              command:
+                - python
+                - -c
+                - |
+                  import asyncio, httpx, os
+                  async def run():
+                      key = os.getenv("ADMIN_API_KEY", "")
+                      base = os.getenv("BACKEND_URL", "http://backend:8000")
+                      async with httpx.AsyncClient() as client:
+                          r = await client.post(
+                              f"{base}/api/analysis/run",
+                              headers={"Authorization": f"Bearer {key}"},
+                              json={"triggered_by": "cronjob"},
+                              timeout=300,
+                          )
+                          print(f"Status: {r.status_code}, Response: {r.text}")
+                  asyncio.run(run())
+              env:
+                - name: ADMIN_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secrets
+                      key: admin-api-key
+                - name: BACKEND_URL
+                  value: "http://backend:8000"
+              resources:
+                requests:
+                  cpu: "128m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "256m"
+                  memory: "512Mi"
+              securityContext:
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+                allowPrivilegeEscalation: false

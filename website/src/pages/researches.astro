@@ -1,0 +1,163 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const researchSites = [
+  {
+    name: "arXiv AI",
+    description: "The most authoritative preprint repository for AI and machine learning research. Thousands of new papers daily.",
+    url: "https://arxiv.org/list/cs.AI/recent",
+    topics: ["Machine Learning", "Deep Learning", "NLP", "Computer Vision"],
+  },
+  {
+    name: "Papers With Code",
+    description: "AI research papers paired with code implementations, benchmarks, and leaderboards across all major ML tasks.",
+    url: "https://paperswithcode.com",
+    topics: ["Benchmarks", "Reproducibility", "State-of-the-Art", "Datasets"],
+  },
+  {
+    name: "Hugging Face Papers",
+    description: "Curated daily AI papers with community discussion, trending scores, and direct model links.",
+    url: "https://huggingface.co/papers",
+    topics: ["NLP", "Vision", "Audio", "Multimodal"],
+  },
+  {
+    name: "Google DeepMind Research",
+    description: "Official Google DeepMind publications covering Gemini 3.5, Gemma 4, Veo 3, Imagen, and foundational ML advances.",
+    url: "https://deepmind.google/research",
+    topics: ["LLMs", "Image Generation", "Video", "Responsible AI"],
+  },
+  {
+    name: "OpenAI Research",
+    description: "OpenAI's published research on GPT-5.5, GPT Image 2, reasoning models, and AI safety.",
+    url: "https://openai.com/research",
+    topics: ["GPT", "Reasoning", "Safety", "Multimodal"],
+  },
+  {
+    name: "Anthropic Research",
+    description: "Anthropic's research on interpretability, alignment, and capabilities of Claude Opus 4.7/4.8 and frontier models.",
+    url: "https://www.anthropic.com/research",
+    topics: ["Alignment", "Interpretability", "Safety", "Constitutional AI"],
+  },
+  {
+    name: "DeepMind Research",
+    description: "Google DeepMind's publications on AGI, reinforcement learning, AlphaFold, and scientific discovery.",
+    url: "https://deepmind.google/research",
+    topics: ["AGI", "RL", "Biology", "Games", "Mathematics"],
+  },
+  {
+    name: "Meta AI Research",
+    description: "Meta's open research on Llama models, computer vision, NLP, and AI for the metaverse.",
+    url: "https://ai.meta.com/research",
+    topics: ["Open Source", "Llama", "Vision", "NLP"],
+  },
+  {
+    name: "MIT AI Research",
+    description: "MIT CSAIL publications covering robotics, NLP, computer vision, and theoretical ML.",
+    url: "https://www.csail.mit.edu/research/artificial-intelligence",
+    topics: ["Robotics", "Theory", "Vision", "NLP"],
+  },
+  {
+    name: "Stanford AI Lab",
+    description: "Stanford's AI research spanning NLP, computer vision, robotics, and AI policy.",
+    url: "https://ai.stanford.edu/research",
+    topics: ["NLP", "Vision", "Robotics", "Policy"],
+  },
+  {
+    name: "Semantic Scholar",
+    description: "AI-powered academic search engine. Millions of papers with AI-extracted summaries, citations, and influence tracking.",
+    url: "https://www.semanticscholar.org",
+    topics: ["Literature Search", "Citations", "Summarization"],
+  },
+  {
+    name: "Elicit Research",
+    description: "AI research assistant for literature reviews. Automatically extracts data, synthesizes findings, and maps research landscapes.",
+    url: "https://elicit.com",
+    topics: ["Literature Review", "Data Extraction", "Synthesis"],
+  },
+  {
+    name: "Microsoft AI Research",
+    description: "Microsoft's AI research covering MAI-Thinking-1, MAI-Code-1, MAI-Image-2.5, and foundation model advances.",
+    url: "https://microsoft.ai/news/",
+    topics: ["Foundation Models", "Coding", "Image Generation", "Reasoning"],
+  },
+  {
+    name: "NVIDIA Research",
+    description: "NVIDIA's AI research on Nemotron 3 Ultra, Nemotron 3.5, Cosmos, and accelerated computing for AI.",
+    url: "https://developer.nvidia.com/blog/category/ai/",
+    topics: ["LLMs", "Safety", "Accelerated Computing", "Robotics"],
+  },
+  {
+    name: "DeepSeek Research",
+    description: "DeepSeek's open research publications on DeepSeek V4, efficient long-context attention, and MoE architectures.",
+    url: "https://api-docs.deepseek.com/updates",
+    topics: ["Open Source", "MoE", "Long Context", "Efficiency"],
+  },
+];
+
+const siteUrl = 'https://bestfreeaifor.com';
+const researchBreadcrumbs = [
+  { name: 'Home', url: `${siteUrl}/` },
+  { name: 'AI Researches', url: `${siteUrl}/researches/` },
+];
+---
+
+<Layout title="AI Researches (2026) — Best Free AI For Research" description="Curated collection of the best AI research resources for 2026. Follow cutting-edge AI research from arXiv, Papers With Code, Hugging Face, Google DeepMind, OpenAI, Anthropic, and more." canonicalUrl={`${siteUrl}/researches/`} keywords="ai research 2026, free ai research tools, ai papers, machine learning research, llm research, ai research papers, follow ai research, deep learning research" breadcrumbs={researchBreadcrumbs}>
+  <Navbar />
+
+  <main class="min-h-screen">
+    <div class="container-main py-12">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-body-sm text-mute mb-8">
+        <a href="/" class="no-underline text-mute hover:text-ink transition-colors">Home</a>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="text-ink">AI Researches</span>
+      </nav>
+
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <span class="text-caption-mono text-mute block mb-3">RESEARCH RESOURCES</span>
+        <h1 class="text-display-xl text-ink mb-4 text-balance">AI Researches</h1>
+        <p class="text-body-lg text-body mx-auto text-balance">
+          Follow cutting-edge AI research from the world's top labs and platforms. Updated daily.
+        </p>
+      </div>
+
+      <!-- Research Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {researchSites.map((site) => (
+          <a
+            href={site.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-canvas rounded-xl border border-hairline p-5 no-underline hover:shadow-card-hover transition-shadow duration-200 block"
+          >
+            <h2 class="text-display-sm text-ink mb-2">{site.name}</h2>
+            <p class="text-body-sm text-body mb-3 leading-relaxed">{site.description}</p>
+            <div class="flex flex-wrap gap-1.5">
+              {site.topics.map((topic) => (
+                <span class="text-caption-mono text-mute bg-canvas-soft-2 px-2 py-0.5 rounded-full border border-hairline">
+                  {topic}
+                </span>
+              ))}
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <!-- CTA -->
+      <div class="text-center mt-16 py-8 border-t border-hairline">
+        <p class="text-body-md text-body mb-4">Want to research AI tools instead?</p>
+        <a
+          href="/#categories"
+          class="inline-flex items-center gap-2 px-6 py-3 rounded-pill-sm text-body-md text-white dark:text-canvas bg-ink no-underline hover:opacity-90 transition-opacity"
+        >
+          Browse AI Tools
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

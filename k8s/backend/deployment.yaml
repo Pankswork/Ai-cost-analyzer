@@ -1,0 +1,95 @@
+# Backend Deployment — runs the FastAPI application
+# Uses IRSA (IAM Roles for Service Accounts) for AWS access
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: cost-detective
+  labels:
+    app: backend
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        component: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+    spec:
+      # Service account with IAM role (IRSA) for AWS resource scanning
+      serviceAccountName: backend
+
+      # Pod security context — run as non-root
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+
+      containers:
+        - name: backend
+          image: backend:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+
+          # Resource requests/limits — crucial for Kubernetes scheduling
+          resources:
+            requests:
+              cpu: "256m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+
+          # Environment from ConfigMap and Secrets
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secrets
+
+          # Container security context — read-only filesystem
+          securityContext:
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+            allowPrivilegeEscalation: false
+
+          # Readiness probe — tells the Service when this pod can accept traffic
+          readinessProbe:
+            httpGet:
+              path: /api/ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          # Liveness probe — restarts the pod if the app is stuck
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+# Backend Service — exposes the backend pods within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: cost-detective
+  labels:
+    app: backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http

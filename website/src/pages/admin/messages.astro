@@ -1,0 +1,45 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout title="Messages — Admin">
+  <Navbar />
+  <main class="min-h-screen py-16">
+    <div class="container-main">
+      <div id="auth-guard" class="hidden"><p class="text-center py-16">Access denied.</p></div>
+      <div id="admin-content" class="hidden">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-display-xl text-ink">Contact Messages</h1>
+          <a href="/admin" class="text-body-sm text-body underline">Back to Admin</a>
+        </div>
+        <div class="space-y-4" id="messages-list"><p class="text-body-md text-body">Loading...</p></div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+import { isAdmin, initAuth } from '../../lib/auth';
+import { api } from '../../lib/api';
+
+initAuth().then(async () => {
+  if (!isAdmin()) { document.getElementById('auth-guard')!.classList.remove('hidden'); return; }
+  document.getElementById('admin-content')!.classList.remove('hidden');
+  const msgs = await api.admin.messages();
+  const container = document.getElementById('messages-list')!;
+  if (msgs.length === 0) { container.innerHTML = '<p class="text-body-md text-body">No messages yet.</p>'; return; }
+  container.innerHTML = msgs.map(m => `
+    <div class="bg-canvas border border-hairline rounded-xl p-6 shadow-card">
+      <div class="flex items-start justify-between mb-2">
+        <div><strong class="text-ink">${m.name}</strong> <span class="text-body-sm text-body">(${m.email})</span></div>
+        <span class="text-body-sm text-body">${new Date(m.created_at).toLocaleDateString()}</span>
+      </div>
+      <p class="text-body-md text-body">${m.message}</p>
+      ${m.replied ? '<span class="inline-block mt-2 text-caption-mono text-green-600">Replied</span>' : '<span class="inline-block mt-2 text-caption-mono text-yellow-600">Unread</span>'}
+    </div>
+  `).join('');
+});
+</script>

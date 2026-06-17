@@ -1,0 +1,44 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="500 — Server Error | BestFreeAIFor"
+  description="Something went wrong on our end. Please try again or contact us if the issue persists."
+  keywords="500 error, server error, best free ai tools"
+  breadcrumbs={[{ name: 'Home', url: 'https://bestfreeaifor.com' }, { name: '500', url: 'https://bestfreeaifor.com/500' }]}
+>
+  <Navbar />
+
+  <main class="flex-1 flex items-center justify-center py-24 md:py-32">
+    <div class="container-main text-center">
+      <span class="text-caption-mono text-mute block mb-4">500 ERROR</span>
+      <h1 class="text-display-xl text-ink mb-4">Something went wrong</h1>
+      <p class="text-body-lg text-body mx-auto max-w-md mb-8 text-balance">
+        An unexpected error occurred. Please try again or reach out if the problem persists.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a
+          href="/"
+          class="inline-flex items-center justify-center gap-2 rounded-full bg-ink text-canvas px-6 py-3 text-body-sm-strong font-medium no-underline hover:opacity-90 transition-opacity"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Back to Home
+        </a>
+        <a
+          href="/contact"
+          class="inline-flex items-center justify-center gap-2 rounded-full border border-hairline text-ink px-6 py-3 text-body-sm-strong font-medium no-underline hover:bg-canvas-soft-2 transition-colors"
+        >
+          Contact Us
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
