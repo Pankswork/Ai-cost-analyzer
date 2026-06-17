@@ -9,7 +9,7 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /api/health
     alb.ingress.kubernetes.io/success-codes: "200"
-    alb.ingress.kubernetes.io/waf-acl-arn: ${WAF_ACL_ARN}
+    alb.ingress.kubernetes.io/waf-acl-arn: arn:aws:wafv2:us-east-1:052301220733:regional/webacl/cost-detective-dev/fe782a03-719d-4098-8c74-3d8ce58696b6
 spec:
   rules:
     - http:
