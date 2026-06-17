@@ -286,7 +286,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "static_assets" {
 resource "aws_wafv2_web_acl" "main" {
   #checkov:skip=CKV2_AWS_31:WAF logging requires Firehose — not configured for dev
   name        = "cost-detective-${var.environment}"
-  description = "WAF ACL for AI Cost Detective — rate limiting + OWASP protection"
+  description = "WAF ACL for AI Cost Detective - rate limiting + OWASP protection"
   scope       = "REGIONAL"
 
   default_action {
