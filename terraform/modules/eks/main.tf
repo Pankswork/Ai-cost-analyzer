@@ -8,6 +8,8 @@
 #
 # Uses the official AWS EKS Terraform module for best practices
 
+data "aws_caller_identity" "current" {}
+
 module "eks" {
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-eks.git?ref=v21.20.0"
 
@@ -69,6 +71,22 @@ module "eks" {
   # Enable IRSA — IAM Roles for Service Accounts
   # Each pod gets its own IAM role. No static keys, no node-level permissions.
   enable_cluster_creator_admin_permissions = true
+
+  # Grant the account root user admin access (for console/kubectl locally)
+  access_entries = {
+    root = {
+      kubernetes_groups = []
+      principal_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
 
   # Required addons for the cluster to function
   addons = {
