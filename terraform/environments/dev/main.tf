@@ -62,10 +62,10 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = module.eks.cluster_endpoint
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-    exec {
+    exec = {
       api_version = "client.authentication.k8s.io/v1beta1"
       args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
       command     = "aws"
@@ -74,7 +74,7 @@ provider "helm" {
 }
 
 # ─── External Secrets Operator ────────────────────────────────────
-resource "kubernetes_namespace" "external_secrets" {
+resource "kubernetes_namespace_v1" "external_secrets" {
   metadata {
     name = "external-secrets"
     labels = {
@@ -88,18 +88,20 @@ resource "helm_release" "external_secrets" {
   repository = "https://charts.external-secrets.io"
   chart      = "external-secrets"
   version    = "~> 0.10"
-  namespace  = kubernetes_namespace.external_secrets.metadata[0].name
+  namespace  = kubernetes_namespace_v1.external_secrets.metadata[0].name
 
-  set {
-    name  = "installCRDs"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    }
+  ]
 
   depends_on = [module.eks]
 }
 
 # ─── Monitoring Namespace ─────────────────────────────────────────
-resource "kubernetes_namespace" "monitoring" {
+resource "kubernetes_namespace_v1" "monitoring" {
   metadata {
     name = "monitoring"
     labels = {
@@ -114,7 +116,7 @@ resource "helm_release" "kube_prometheus_stack" {
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
   version    = "~> 60.0"
-  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
 
   values = [
     <<-YAML
@@ -290,6 +292,12 @@ resource "aws_wafv2_web_acl" "main" {
     allow {}
   }
 
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "CostDetectiveWAF"
+    sampled_requests_enabled   = true
+  }
+
   # Rate-based rule — block IPs exceeding 2000 requests in 5 minutes
   rule {
     name     = "rate-limiting"
@@ -323,7 +331,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     statement {
-      sql_injection_match_statement {
+      sqli_match_statement {
         field_to_match {
           query_string {}
         }

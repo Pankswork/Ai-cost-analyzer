@@ -9,22 +9,22 @@
 # Uses the official AWS EKS Terraform module for best practices
 
 module "eks" {
-  source = "git::https://github.com/terraform-aws-modules/terraform-aws-eks.git?ref=v20.31.6"
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-eks.git?ref=v21.20.0"
 
-  cluster_name    = "cost-detective-${var.environment}"
-  cluster_version = var.cluster_version
+  name    = "cost-detective-${var.environment}"
+  kubernetes_version = var.cluster_version
 
   # VPC configuration
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnet_ids
 
   # Control plane access — public for kubectl, private for internal traffic
-  cluster_endpoint_public_access  = true
-  cluster_endpoint_private_access = true
+  endpoint_public_access  = true
+  endpoint_private_access = true
 
   # Enable all control plane log types for full observability
   # Cost: ~$0.50/log-stream/day — cheap for dev observability
-  cluster_enabled_log_types = [
+  enabled_log_types = [
     "api",
     "audit",
     "authenticator",
