@@ -9,8 +9,7 @@
 # Uses the official AWS EKS Terraform module for best practices
 
 module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "20.31.6"
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-eks.git?ref=v20.31.6"
 
   cluster_name    = "cost-detective-${var.environment}"
   cluster_version = var.cluster_version

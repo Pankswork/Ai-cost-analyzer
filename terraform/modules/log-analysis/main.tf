@@ -1,6 +1,23 @@
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
+# KMS key for DynamoDB and Lambda encryption
+resource "aws_kms_key" "log_analysis" {
+  description             = "KMS key for log analysis DynamoDB and Lambda"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Name        = "log-analysis-${var.environment}"
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "log_analysis" {
+  name          = "alias/log-analysis-${var.environment}"
+  target_key_id = aws_kms_key.log_analysis.id
+}
+
 resource "aws_dynamodb_table" "log_reports" {
   name         = "log-analysis-reports-${var.environment}"
   billing_mode = "PAY_PER_REQUEST"
@@ -12,7 +29,8 @@ resource "aws_dynamodb_table" "log_reports" {
   }
 
   server_side_encryption {
-    enabled = true
+    enabled     = true
+    kms_key_arn = aws_kms_key.log_analysis.arn
   }
 
   point_in_time_recovery {
@@ -99,6 +117,9 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/log-analysis.zip"
 }
 
+# checkov:skip=CKV_AWS_117:Lambda does not need VPC access — reads CloudWatch logs via API
+# checkov:skip=CKV_AWS_116:No DLQ needed — errors logged to CloudWatch
+# checkov:skip=CKV_AWS_272:Code signing not required for internal Lambda
 resource "aws_lambda_function" "log_analysis" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "log-analysis-${var.environment}"
@@ -108,6 +129,12 @@ resource "aws_lambda_function" "log_analysis" {
   timeout          = 300
   memory_size      = 512
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  kms_key_arn = aws_kms_key.log_analysis.arn
+
+  tracing_config {
+    mode = "Active"
+  }
 
   environment {
     variables = {
