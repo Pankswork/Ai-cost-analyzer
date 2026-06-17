@@ -43,7 +43,7 @@ module "eks" {
       min_size     = 1
       max_size     = 3
 
-      instance_types = ["m7i-flex.large"]
+      instance_types = ["m7i-flex.large", "c7i-flex.large"]
 
       # EBS optimization — gp3 with encryption by default
       block_device_mappings = {
