@@ -124,8 +124,8 @@ resource "aws_db_parameter_group" "main" {
   }
 }
 
-# checkov:skip=CKV_AWS_157:Single-AZ is sufficient for dev — Multi-AZ adds unnecessary cost
 resource "aws_db_instance" "main" {
+  #checkov:skip=CKV_AWS_157:Single-AZ is sufficient for dev — Multi-AZ adds unnecessary cost
   identifier = "cost-detective-${var.environment}"
 
   # Engine configuration

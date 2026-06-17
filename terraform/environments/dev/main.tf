@@ -224,10 +224,10 @@ resource "aws_ecr_repository" "frontend" {
 
 # ─── S3 Static Assets Bucket ───────────────────────────────────────
 
-# checkov:skip=CKV2_AWS_62:No event notifications needed — CD pipeline syncs directly
-# checkov:skip=CKV_AWS_144:Cross-region replication not needed for dev static assets
-# checkov:skip=CKV_AWS_18:Access logging requires separate logging bucket — not configured for dev
 resource "aws_s3_bucket" "static_assets" {
+  #checkov:skip=CKV2_AWS_62:No event notifications needed — CD pipeline syncs directly
+  #checkov:skip=CKV_AWS_144:Cross-region replication not needed for dev static assets
+  #checkov:skip=CKV_AWS_18:Access logging requires separate logging bucket — not configured for dev
   bucket = "cost-detective-${var.environment}-static-assets"
 
   tags = {
@@ -291,8 +291,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "static_assets" {
 
 # ─── WAF Web ACL ───────────────────────────────────────────────────
 
-# checkov:skip=CKV2_AWS_31:WAF logging requires Firehose — not configured for dev
 resource "aws_wafv2_web_acl" "main" {
+  #checkov:skip=CKV2_AWS_31:WAF logging requires Firehose — not configured for dev
   name        = "cost-detective-${var.environment}"
   description = "WAF ACL for AI Cost Detective — rate limiting + OWASP protection"
   scope       = "REGIONAL"
