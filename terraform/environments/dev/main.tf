@@ -152,6 +152,7 @@ module "networking" {
 module "eks" {
   source             = "../../modules/eks"
   environment        = var.environment
+  aws_region         = var.aws_region
   vpc_id             = module.networking.vpc_id
   private_subnet_ids = module.networking.private_subnet_ids
   cluster_version    = "1.36"

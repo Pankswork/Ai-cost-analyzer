@@ -11,8 +11,9 @@
 module "eks" {
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-eks.git?ref=v21.20.0"
 
-  name    = "cost-detective-${var.environment}"
+  name               = "cost-detective-${var.environment}"
   kubernetes_version = var.cluster_version
+  region             = var.aws_region
 
   # VPC configuration
   vpc_id     = var.vpc_id
@@ -36,6 +37,8 @@ module "eks" {
   # In production, separate node groups for system vs. application workloads
   eks_managed_node_groups = {
     cost-detective = {
+      create = true
+
       desired_size = 1
       min_size     = 1
       max_size     = 3
