@@ -87,7 +87,7 @@ resource "helm_release" "external_secrets" {
   name       = "external-secrets"
   repository = "https://charts.external-secrets.io"
   chart      = "external-secrets"
-  version    = "~> 0.10"
+  version    = "0.10.7"
   namespace  = kubernetes_namespace_v1.external_secrets.metadata[0].name
 
   set = [
@@ -115,7 +115,7 @@ resource "helm_release" "kube_prometheus_stack" {
   name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
-  version    = "~> 60.0"
+  version    = "60.0.2"
   namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
 
   values = [
