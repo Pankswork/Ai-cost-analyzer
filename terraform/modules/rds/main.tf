@@ -47,9 +47,10 @@ resource "aws_db_instance" "main" {
   identifier = "cost-detective-${var.environment}"
 
   # Engine configuration
-  engine         = "postgres"
-  engine_version = "16.3"
-  instance_class = var.instance_class
+  engine                     = "postgres"
+  engine_version             = "16.3"
+  instance_class             = var.instance_class
+  auto_minor_version_upgrade = true
 
   # Database configuration
   db_name  = var.database_name
@@ -62,14 +63,19 @@ resource "aws_db_instance" "main" {
   storage_encrypted = true
 
   # Network — private subnets only
-  db_subnet_group_name   = aws_db_subnet_group.main.name
-  vpc_security_group_ids = [aws_security_group.rds.id]
-  publicly_accessible    = false
+  db_subnet_group_name                = aws_db_subnet_group.main.name
+  vpc_security_group_ids              = [aws_security_group.rds.id]
+  publicly_accessible                 = false
+  iam_database_authentication_enabled = true
 
   # Backups — 7-day retention for dev
   backup_retention_period = 7
   backup_window           = "03:00-04:00"
   maintenance_window      = "sun:04:00-sun:05:00"
+
+  # Performance Insights — 7-day free tier retention
+  performance_insights_enabled          = true
+  performance_insights_retention_period = 7
 
   # Deletion protection — prevents accidental deletion in production
   # Disabled for dev so we can tear down easily
