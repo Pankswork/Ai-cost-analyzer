@@ -128,7 +128,7 @@ resource "aws_iam_role" "alb_controller" {
   })
 }
 
-# checkov:skip=CKV_AWS_289:ALB controller dynamically creates security groups, ELBs, and listener rules — Resource=* required for cross-resource management
+# checkov:skip=CKV_AWS_289:ALB controller needs ec2, elb, waf, acm, iam and shield permissions with wildcard resources to dynamically manage load balancer infrastructure
 resource "aws_iam_role_policy" "alb_controller" {
   name = "cost-detective-${var.environment}-alb-controller-policy"
   role = aws_iam_role.alb_controller.id
