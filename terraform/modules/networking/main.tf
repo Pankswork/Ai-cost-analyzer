@@ -210,6 +210,20 @@ resource "aws_kms_key" "flow_logs" {
         Action   = "kms:*"
         Resource = "*"
       },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logs.${var.aws_region}.amazonaws.com"
+        }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey",
+        ]
+        Resource = "*"
+      },
     ]
   })
 
