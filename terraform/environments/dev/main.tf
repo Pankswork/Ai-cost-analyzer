@@ -224,6 +224,7 @@ resource "aws_ecr_repository" "frontend" {
 
 # ─── S3 Static Assets Bucket ───────────────────────────────────────
 
+# checkov:skip=CKV2_AWS_62:No event notifications needed — CD pipeline syncs directly
 resource "aws_s3_bucket" "static_assets" {
   bucket = "cost-detective-${var.environment}-static-assets"
 

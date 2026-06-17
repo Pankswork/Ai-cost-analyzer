@@ -8,6 +8,7 @@ on:
       - 'website/**'
 
 permissions:
+  id-token: write
   contents: write
 
 env:

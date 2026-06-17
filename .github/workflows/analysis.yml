@@ -3,6 +3,9 @@ name: Manual Cost Analysis
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+
 env:
   AWS_REGION: us-east-1
 
