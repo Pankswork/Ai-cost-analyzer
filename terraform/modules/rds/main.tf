@@ -114,6 +114,11 @@ resource "aws_db_parameter_group" "main" {
     value = "0"
   }
 
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
+  }
+
   tags = {
     Name = "cost-detective-${var.environment}"
   }
@@ -125,7 +130,7 @@ resource "aws_db_instance" "main" {
 
   # Engine configuration
   engine                     = "postgres"
-  engine_version             = "16.3"
+  engine_version             = "16.14"
   instance_class             = var.instance_class
   auto_minor_version_upgrade = true
   parameter_group_name       = aws_db_parameter_group.main.name

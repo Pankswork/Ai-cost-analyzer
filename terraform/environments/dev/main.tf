@@ -163,13 +163,14 @@ module "eks" {
   environment        = var.environment
   vpc_id             = module.networking.vpc_id
   private_subnet_ids = module.networking.private_subnet_ids
-  cluster_version    = "1.30"
+  cluster_version    = "1.36"
 
   depends_on = [module.networking]
 }
 
 # ─── RDS Database Layer ────────────────────────────────────────────
 
+# checkov:skip=CKV_AWS_157:Multi-AZ adds cost — not needed for dev
 module "rds" {
   source                    = "../../modules/rds"
   environment               = var.environment

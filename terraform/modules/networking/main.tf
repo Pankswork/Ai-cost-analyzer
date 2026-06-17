@@ -192,10 +192,43 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
 
 # ─── VPC Flow Logs ────────────────────────────────────────────────
 
-# CloudWatch log group for VPC flow logs
+data "aws_caller_identity" "current" {}
+
+# KMS key for VPC flow log encryption
+resource "aws_kms_key" "flow_logs" {
+  description             = "KMS key for VPC flow log encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+    ]
+  })
+
+  tags = {
+    Name        = "cost-detective-${var.environment}-flow-logs"
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "flow_logs" {
+  name          = "alias/cost-detective-${var.environment}-flow-logs"
+  target_key_id = aws_kms_key.flow_logs.id
+}
+
+# CloudWatch log group for VPC flow logs — encrypted with KMS
 resource "aws_cloudwatch_log_group" "flow_logs" {
   name              = "/aws/vpc/flow-logs/cost-detective-${var.environment}"
-  retention_in_days = 90
+  retention_in_days = 365
+  kms_key_id        = aws_kms_key.flow_logs.arn
 
   tags = {
     Name        = "cost-detective-${var.environment}-flow-logs"

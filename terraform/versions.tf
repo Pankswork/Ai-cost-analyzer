@@ -2,21 +2,20 @@
 # This file is included by all root modules to ensure consistent versions
 
 terraform {
-  # Use Terraform 1.9+ for latest features
-  required_version = ">= 1.9.0"
+  required_version = ">= 1.11.0"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.94.1"
+      version = "~> 6.0"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "2.17.0"
+      version = "~> 3.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.35.1"
+      version = "~> 3.0"
     }
   }
 }
