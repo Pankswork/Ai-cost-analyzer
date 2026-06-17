@@ -456,8 +456,6 @@ module "argocd" {
   cluster_endpoint                   = module.eks.cluster_endpoint
   cluster_certificate_authority_data = module.eks.cluster_certificate_authority_data
   cluster_id                         = module.eks.cluster_id
-
-  depends_on = [module.eks]
 }
 
 # ─── Log Analysis Lambda ──────────────────────────────────────────
