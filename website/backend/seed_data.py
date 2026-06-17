@@ -6,7 +6,7 @@ import re
 import asyncio
 
 sys.path.insert(0, os.path.dirname(__file__))
-os.environ.setdefault("APP_DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/bestfreeaifor")
+os.environ.setdefault("APP_DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/bestfreeaifor")  # local dev only
 
 from app.db.session import async_session, engine, Base
 from app.models.tool import Category, Tool

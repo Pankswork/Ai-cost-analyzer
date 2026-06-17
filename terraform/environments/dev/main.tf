@@ -182,6 +182,7 @@ module "rds" {
 
 # ─── ECR Repositories ──────────────────────────────────────────────
 
+# checkov:skip=CKV_AWS_51:MUTABLE required for CD workflow to push latest tag
 resource "aws_ecr_repository" "backend" {
   name                 = "backend"
   image_tag_mutability = "MUTABLE"
@@ -191,12 +192,17 @@ resource "aws_ecr_repository" "backend" {
     scan_on_push = true
   }
 
+  encryption_configuration {
+    encryption_type = "KMS"
+  }
+
   tags = {
     Name        = "backend"
     Environment = var.environment
   }
 }
 
+# checkov:skip=CKV_AWS_51:MUTABLE required for CD workflow to push latest tag
 resource "aws_ecr_repository" "frontend" {
   name                 = "frontend"
   image_tag_mutability = "MUTABLE"
@@ -204,6 +210,10 @@ resource "aws_ecr_repository" "frontend" {
 
   image_scanning_configuration {
     scan_on_push = true
+  }
+
+  encryption_configuration {
+    encryption_type = "KMS"
   }
 
   tags = {

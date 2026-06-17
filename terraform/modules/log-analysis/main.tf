@@ -1,3 +1,6 @@
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
 resource "aws_dynamodb_table" "log_reports" {
   name         = "log-analysis-reports-${var.environment}"
   billing_mode = "PAY_PER_REQUEST"
@@ -6,6 +9,14 @@ resource "aws_dynamodb_table" "log_reports" {
   attribute {
     name = "report_id"
     type = "S"
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+
+  point_in_time_recovery {
+    enabled = true
   }
 
   tags = {
@@ -34,6 +45,7 @@ resource "aws_iam_role" "lambda_role" {
   }
 }
 
+# checkov:skip=CKV_AWS_355:SES actions require * resource for verified identities
 resource "aws_iam_role_policy" "lambda_policy" {
   name = "log-analysis-${var.environment}"
   role = aws_iam_role.lambda_role.id
@@ -48,7 +60,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "logs:DescribeLogGroups",
           "logs:DescribeLogStreams",
         ]
-        Resource = "*"
+        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/eks/*:*"
       },
       {
         Effect = "Allow"
@@ -66,7 +78,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "ses:SendEmail",
           "ses:SendRawEmail",
         ]
-        Resource = "*"
+        Resource = "arn:aws:ses:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:identity/*"
       },
       {
         Effect = "Allow"
@@ -75,7 +87,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents",
         ]
-        Resource = "arn:aws:logs:*:*:*"
+        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/log-analysis-${var.environment}:*"
       },
     ]
   })

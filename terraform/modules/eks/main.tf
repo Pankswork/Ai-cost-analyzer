@@ -10,7 +10,7 @@
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.0"
+  version = "20.31.6"
 
   cluster_name    = "cost-detective-${var.environment}"
   cluster_version = var.cluster_version
@@ -131,7 +131,8 @@ resource "aws_iam_role_policy_attachment" "alb_controller" {
   policy_arn = "arn:aws:iam::aws:policy/AWSLoadBalancerControllerAdditionalPolicy"
 }
 
-# Attach minimal read-only permissions — no wildcard admin access
+# checkov:skip=CKV_AWS_355:Describe actions require * resource — ARNs unknown before discovery
+# checkov:skip=CKV_AWS_290:Read-only Describe actions, no write access
 resource "aws_iam_role_policy" "backend" {
   name = "cost-detective-${var.environment}-backend-policy"
   role = aws_iam_role.backend.id
