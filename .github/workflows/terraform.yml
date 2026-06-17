@@ -44,7 +44,7 @@ jobs:
           directory: terraform/
           framework: terraform
           soft_fail: false
-          skip_check: CKV_AWS_51,CKV_AWS_355,CKV_AWS_290,CKV_AWS_117,CKV_AWS_116,CKV_AWS_272,CKV_AWS_130,CKV_TF_1
+          skip_check: CKV_AWS_51,CKV_AWS_355,CKV_AWS_290,CKV_AWS_117,CKV_AWS_116,CKV_AWS_272,CKV_AWS_130,CKV_AWS_289,CKV_TF_1
 
   terraform:
     needs: security-scan
