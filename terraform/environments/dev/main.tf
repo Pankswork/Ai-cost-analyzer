@@ -170,7 +170,6 @@ module "eks" {
 
 # ─── RDS Database Layer ────────────────────────────────────────────
 
-# checkov:skip=CKV_AWS_157:Multi-AZ adds cost — not needed for dev
 module "rds" {
   source                    = "../../modules/rds"
   environment               = var.environment
