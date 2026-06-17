@@ -223,7 +223,7 @@ resource "aws_s3_bucket" "static_assets" {
   #checkov:skip=CKV_AWS_144:Cross-region replication not needed for dev static assets
   #checkov:skip=CKV_AWS_18:Access logging requires separate logging bucket — not configured for dev
   #checkov:skip=CKV_AWS_347:force_destroy enabled for dev — must allow terraform destroy
-  bucket = "cost-detective-${var.environment}-static-assets"
+  bucket        = "cost-detective-${var.environment}-static-assets"
   force_destroy = true
 
   tags = {
