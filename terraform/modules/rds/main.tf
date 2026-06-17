@@ -126,6 +126,7 @@ resource "aws_db_parameter_group" "main" {
 
 resource "aws_db_instance" "main" {
   #checkov:skip=CKV_AWS_157:Single-AZ is sufficient for dev — Multi-AZ adds unnecessary cost
+  #checkov:skip=CKV_AWS_118:Enhanced monitoring disabled for dev — free tier constraint
   identifier = "cost-detective-${var.environment}"
 
   # Engine configuration
