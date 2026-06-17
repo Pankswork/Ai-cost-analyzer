@@ -173,6 +173,7 @@ resource "aws_db_instance" "main" {
 
   # Deletion protection — disabled for dev so terraform destroy works
   #checkov:skip=CKV_AWS_292:Disabled intentionally — dev env, must be able to destroy/recreate
+  #checkov:skip=CKV_AWS_293:Disabled intentionally — dev env, must be able to destroy/recreate
   deletion_protection = false
   skip_final_snapshot = true
 
