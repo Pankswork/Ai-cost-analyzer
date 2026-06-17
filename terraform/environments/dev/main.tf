@@ -6,17 +6,6 @@
 # Apply order: terraform apply -auto-approve
 # Destroy order: terraform destroy (reverse order)
 
-terraform {
-  # State backend — stores terraform state in S3 with DynamoDB locking
-  backend "s3" {
-    bucket         = "cost-detective-terraform-state"
-    key            = "dev/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "cost-detective-terraform-locks"
-    encrypt        = true
-  }
-}
-
 # ─── Variables ─────────────────────────────────────────────────────
 
 variable "aws_region" {
@@ -457,7 +446,6 @@ module "argocd" {
   cluster_certificate_authority_data = module.eks.cluster_certificate_authority_data
   cluster_id                         = module.eks.cluster_id
 
-  depends_on = [module.eks]
 }
 
 # ─── Log Analysis Lambda ──────────────────────────────────────────
