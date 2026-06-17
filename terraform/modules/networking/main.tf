@@ -10,6 +10,15 @@ resource "aws_vpc" "main" {
   }
 }
 
+# Default security group — deny all traffic (removes default allows)
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "cost-detective-${var.environment}-default-sg"
+  }
+}
+
 # Public subnets — for ALB and NAT Gateway
 # Spread across AZs for high availability
 resource "aws_subnet" "public" {
@@ -178,5 +187,59 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
 
   tags = {
     Name = "cost-detective-${var.environment}-ecr-dkr"
+  }
+}
+
+# ─── VPC Flow Logs ────────────────────────────────────────────────
+
+# CloudWatch log group for VPC flow logs
+resource "aws_cloudwatch_log_group" "flow_logs" {
+  name              = "/aws/vpc/flow-logs/cost-detective-${var.environment}"
+  retention_in_days = 90
+
+  tags = {
+    Name        = "cost-detective-${var.environment}-flow-logs"
+    Environment = var.environment
+  }
+}
+
+# IAM role for VPC Flow Logs
+resource "aws_iam_role" "flow_logs" {
+  name = "cost-detective-${var.environment}-vpc-flow-logs"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "vpc-flow-logs.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      },
+    ]
+  })
+
+  tags = {
+    Name        = "cost-detective-${var.environment}-vpc-flow-logs"
+    Environment = var.environment
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "flow_logs" {
+  role       = aws_iam_role.flow_logs.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+}
+
+# VPC Flow Log — captures all traffic metadata
+resource "aws_flow_log" "main" {
+  iam_role_arn    = aws_iam_role.flow_logs.arn
+  log_destination = aws_cloudwatch_log_group.flow_logs.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.main.id
+
+  tags = {
+    Name        = "cost-detective-${var.environment}-flow-logs"
+    Environment = var.environment
   }
 }

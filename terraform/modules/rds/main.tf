@@ -7,6 +7,8 @@
 # - Encrypted at rest (AWS-managed key)
 # - Backed up automatically with 7-day retention
 
+data "aws_caller_identity" "current" {}
+
 # Random password for the database
 resource "random_password" "db_password" {
   length  = 24
@@ -72,6 +74,19 @@ resource "aws_kms_key" "rds" {
   description             = "KMS key for RDS Performance Insights"
   deletion_window_in_days = 7
   enable_key_rotation     = true
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+    ]
+  })
 
   tags = {
     Name = "cost-detective-${var.environment}-rds"
@@ -83,6 +98,27 @@ resource "aws_kms_alias" "rds" {
   target_key_id = aws_kms_key.rds.id
 }
 
+# DB parameter group — enables PostgreSQL query logging
+resource "aws_db_parameter_group" "main" {
+  name        = "cost-detective-${var.environment}"
+  family      = "postgres16"
+  description = "Custom parameter group for cost-detective-${var.environment}"
+
+  parameter {
+    name  = "log_statement"
+    value = "all"
+  }
+
+  parameter {
+    name  = "log_min_duration_statement"
+    value = "0"
+  }
+
+  tags = {
+    Name = "cost-detective-${var.environment}"
+  }
+}
+
 # RDS PostgreSQL instance
 resource "aws_db_instance" "main" {
   identifier = "cost-detective-${var.environment}"
@@ -92,6 +128,7 @@ resource "aws_db_instance" "main" {
   engine_version             = "16.3"
   instance_class             = var.instance_class
   auto_minor_version_upgrade = true
+  parameter_group_name       = aws_db_parameter_group.main.name
 
   # Database configuration
   db_name  = var.database_name
@@ -123,9 +160,14 @@ resource "aws_db_instance" "main" {
   performance_insights_retention_period = 7
   performance_insights_kms_key_id       = aws_kms_key.rds.arn
 
-  # Deletion protection — prevents accidental deletion in production
-  # Disabled for dev so we can tear down easily
-  deletion_protection = false
+  # Logging — PostgreSQL logs to CloudWatch
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+
+  # Copy tags to snapshots
+  copy_tags_to_snapshot = true
+
+  # Deletion protection — prevents accidental deletion
+  deletion_protection = true
   skip_final_snapshot = true
 
   tags = {

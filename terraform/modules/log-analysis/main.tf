@@ -6,6 +6,19 @@ resource "aws_kms_key" "log_analysis" {
   description             = "KMS key for log analysis DynamoDB and Lambda"
   deletion_window_in_days = 7
   enable_key_rotation     = true
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+    ]
+  })
 
   tags = {
     Name        = "log-analysis-${var.environment}"

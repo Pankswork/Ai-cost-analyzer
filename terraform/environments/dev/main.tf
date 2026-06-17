@@ -225,6 +225,8 @@ resource "aws_ecr_repository" "frontend" {
 # ─── S3 Static Assets Bucket ───────────────────────────────────────
 
 # checkov:skip=CKV2_AWS_62:No event notifications needed — CD pipeline syncs directly
+# checkov:skip=CKV_AWS_144:Cross-region replication not needed for dev static assets
+# checkov:skip=CKV_AWS_18:Access logging requires separate logging bucket — not configured for dev
 resource "aws_s3_bucket" "static_assets" {
   bucket = "cost-detective-${var.environment}-static-assets"
 
@@ -250,11 +252,46 @@ resource "aws_s3_bucket_public_access_block" "static_assets" {
   restrict_public_buckets = true
 }
 
+# S3 server-side encryption — KMS managed key
+resource "aws_s3_bucket_server_side_encryption_configuration" "static_assets" {
+  bucket = aws_s3_bucket.static_assets.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
+    }
+  }
+}
+
+# S3 lifecycle — expire noncurrent versions after 30 days
+resource "aws_s3_bucket_lifecycle_configuration" "static_assets" {
+  bucket = aws_s3_bucket.static_assets.id
+
+  rule {
+    id     = "expire-noncurrent-versions"
+    status = "Enabled"
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+  }
+
+  rule {
+    id     = "abort-incomplete-multipart-uploads"
+    status = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}
+
 # ─── ACM Certificate (disabled — no domain yet) ────────────────────
 # Uncomment and set route53_zone_id + domain_name in tfvars when ready
 
 # ─── WAF Web ACL ───────────────────────────────────────────────────
 
+# checkov:skip=CKV2_AWS_31:WAF logging requires Firehose — not configured for dev
 resource "aws_wafv2_web_acl" "main" {
   name        = "cost-detective-${var.environment}"
   description = "WAF ACL for AI Cost Detective — rate limiting + OWASP protection"
