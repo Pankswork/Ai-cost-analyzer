@@ -42,6 +42,47 @@ resource "aws_security_group" "rds" {
   }
 }
 
+# IAM role for RDS Enhanced Monitoring
+resource "aws_iam_role" "rds_monitoring" {
+  name = "cost-detective-${var.environment}-rds-monitoring"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "monitoring.rds.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+
+  tags = {
+    Name = "cost-detective-${var.environment}-rds-monitoring"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "rds_monitoring" {
+  role       = aws_iam_role.rds_monitoring.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+}
+
+# KMS key for RDS Performance Insights encryption
+resource "aws_kms_key" "rds" {
+  description             = "KMS key for RDS Performance Insights"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Name = "cost-detective-${var.environment}-rds"
+  }
+}
+
+resource "aws_kms_alias" "rds" {
+  name          = "alias/cost-detective-${var.environment}-rds"
+  target_key_id = aws_kms_key.rds.id
+}
+
 # RDS PostgreSQL instance
 resource "aws_db_instance" "main" {
   identifier = "cost-detective-${var.environment}"
@@ -73,9 +114,14 @@ resource "aws_db_instance" "main" {
   backup_window           = "03:00-04:00"
   maintenance_window      = "sun:04:00-sun:05:00"
 
-  # Performance Insights — 7-day free tier retention
+  # Enhanced Monitoring — 60s interval for CloudWatch metrics
+  monitoring_interval = 60
+  monitoring_role_arn = aws_iam_role.rds_monitoring.arn
+
+  # Performance Insights — encrypted with KMS CMK, 7-day retention (free tier)
   performance_insights_enabled          = true
   performance_insights_retention_period = 7
+  performance_insights_kms_key_id       = aws_kms_key.rds.arn
 
   # Deletion protection — prevents accidental deletion in production
   # Disabled for dev so we can tear down easily
