@@ -68,6 +68,22 @@ module "eks" {
 
   # Enable IRSA — IAM Roles for Service Accounts
   # Each pod gets its own IAM role. No static keys, no node-level permissions.
+  enable_cluster_creator_admin_permissions = true
+
+  # Required addons for the cluster to function
+  addons = {
+    coredns = {
+      most_recent = true
+    }
+    kube-proxy = {
+      most_recent = true
+    }
+    vpc-cni = {
+      most_recent    = true
+      before_compute = true
+    }
+  }
+
   enable_irsa = true
 
   tags = {

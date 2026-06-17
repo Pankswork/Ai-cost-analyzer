@@ -75,6 +75,7 @@ provider "helm" {
 
 # ─── External Secrets Operator ────────────────────────────────────
 resource "kubernetes_namespace_v1" "external_secrets" {
+  depends_on = [module.eks]
   metadata {
     name = "external-secrets"
     labels = {
@@ -102,6 +103,7 @@ resource "helm_release" "external_secrets" {
 
 # ─── Monitoring Namespace ─────────────────────────────────────────
 resource "kubernetes_namespace_v1" "monitoring" {
+  depends_on = [module.eks]
   metadata {
     name = "monitoring"
     labels = {
@@ -455,6 +457,7 @@ module "argocd" {
   cluster_certificate_authority_data = module.eks.cluster_certificate_authority_data
   cluster_id                         = module.eks.cluster_id
 
+  depends_on = [module.eks]
 }
 
 # ─── Log Analysis Lambda ──────────────────────────────────────────
