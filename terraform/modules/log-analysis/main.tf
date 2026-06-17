@@ -143,6 +143,8 @@ resource "aws_lambda_function" "log_analysis" {
   memory_size      = 512
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
+  reserved_concurrent_executions = 100
+
   kms_key_arn = aws_kms_key.log_analysis.arn
 
   tracing_config {
