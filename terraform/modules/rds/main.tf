@@ -151,14 +151,13 @@ resource "aws_db_instance" "main" {
   publicly_accessible                 = false
   iam_database_authentication_enabled = true
 
-  # Backups — 7-day retention for dev
-  backup_retention_period = 7
+  # Backups — 1-day retention (free tier limit)
+  backup_retention_period = 1
   backup_window           = "03:00-04:00"
   maintenance_window      = "sun:04:00-sun:05:00"
 
-  # Enhanced Monitoring — 60s interval for CloudWatch metrics
-  monitoring_interval = 60
-  monitoring_role_arn = aws_iam_role.rds_monitoring.arn
+  # Enhanced Monitoring — disabled (free tier, adds cost)
+  monitoring_interval = 0
 
   # Performance Insights — encrypted with KMS CMK, 7-day retention (free tier)
   performance_insights_enabled          = true
