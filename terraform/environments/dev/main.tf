@@ -155,7 +155,7 @@ module "eks" {
   aws_region         = var.aws_region
   vpc_id             = module.networking.vpc_id
   private_subnet_ids = module.networking.private_subnet_ids
-  cluster_version    = "1.36"
+  cluster_version    = "1.35"
 
   depends_on = [module.networking]
 }
