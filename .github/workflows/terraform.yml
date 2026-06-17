@@ -97,9 +97,11 @@ jobs:
               body: output
             });
 
-      - name: Terraform Apply
+      - name: Terraform Apply — core first, then all resources
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply -auto-approve -target=module.eks.module.eks.aws_eks_cluster.this[0] || true
+          terraform apply -auto-approve
         working-directory: terraform/environments/dev
 
       - name: Setup Helm
