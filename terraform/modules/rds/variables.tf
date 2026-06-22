@@ -31,3 +31,8 @@ variable "instance_class" {
   type        = string
   default     = "db.t3.micro"
 }
+
+variable "node_security_group_id" {
+  description = "EKS node security group ID (allows pod-to-RDS traffic)"
+  type        = string
+}

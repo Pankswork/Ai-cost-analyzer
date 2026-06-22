@@ -1,0 +1,7 @@
+# Required variables — copy to terraform.tfvars and fill in
+zen_api_key = "your-opencode-zen-api-key-here"
+
+# Optional — set these if you want log analysis alerts
+# slack_webhook_url = "https://hooks.slack.com/services/..."
+# ses_from_email   = "noreply@bestfreeaifor.com"
+# ses_to_email     = "admin@bestfreeaifor.com"

@@ -320,3 +320,52 @@ resource "aws_iam_role_policy" "backend" {
     ]
   })
 }
+
+# ─── IAM Role for External Secrets Operator (IRSA) ──────────────
+#
+# Allows the External Secrets Operator (deployed in the external-secrets
+# namespace) to read secrets from AWS Secrets Manager.  The
+# ClusterSecretStore uses serviceAccountRef to point here.
+
+resource "aws_iam_role" "external_secrets" {
+  name = "cost-detective-${var.environment}-external-secrets"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = module.eks.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${module.eks.oidc_provider}:sub" : "system:serviceaccount:external-secrets:external-secrets"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "external_secrets" {
+  name = "cost-detective-${var.environment}-external-secrets-policy"
+  role = aws_iam_role.external_secrets.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+

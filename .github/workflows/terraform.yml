@@ -80,7 +80,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'  
-        run: terraform plan -no-color
+        run: terraform plan -no-color -var="zen_api_key=${{ secrets.ZEN_API_KEY }}"
         working-directory: terraform/environments/dev
         continue-on-error: true
 
@@ -105,7 +105,7 @@ jobs:
 
       - name: Terraform Apply (full)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var="zen_api_key=${{ secrets.ZEN_API_KEY }}"
         working-directory: terraform/environments/dev
 
       - name: Setup Helm

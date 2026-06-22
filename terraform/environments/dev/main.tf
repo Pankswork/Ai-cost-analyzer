@@ -44,6 +44,12 @@ variable "ses_to_email" {
   default     = "admin@bestfreeaifor.com"
 }
 
+variable "zen_api_key" {
+  description = "API key for opencode Zen (AI analysis)"
+  type        = string
+  sensitive   = true
+}
+
 # ─── Data Sources ──────────────────────────────────────────────────
 
 data "aws_caller_identity" "current" {}
@@ -95,7 +101,11 @@ resource "helm_release" "external_secrets" {
     {
       name  = "installCRDs"
       value = "true"
-    }
+    },
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = module.eks.external_secrets_role_arn
+    },
   ]
 
   depends_on = [module.eks]
@@ -170,6 +180,7 @@ module "rds" {
   vpc_id                    = module.networking.vpc_id
   private_subnet_ids        = module.networking.private_subnet_ids
   cluster_security_group_id = module.eks.cluster_security_group_id
+  node_security_group_id    = module.eks.node_security_group_id
 
   depends_on = [module.networking, module.eks]
 }
@@ -284,6 +295,31 @@ resource "aws_s3_bucket_lifecycle_configuration" "static_assets" {
 
 # ─── ACM Certificate (disabled — no domain yet) ────────────────────
 # Uncomment and set route53_zone_id + domain_name in tfvars when ready
+
+# ─── Backend Secrets (AWS Secrets Manager) ─────────────────────────
+#
+# The backend reads these at startup via External Secrets Operator.
+# Terraform creates the secret so it exists before the app starts.
+
+resource "random_password" "jwt_secret" {
+  length  = 32
+  special = false
+}
+
+resource "aws_secretsmanager_secret" "backend" {
+  name = "cost-detective-${var.environment}-backend"
+}
+
+resource "aws_secretsmanager_secret_version" "backend" {
+  secret_id = aws_secretsmanager_secret.backend.id
+  secret_string = jsonencode({
+    jwt_secret_key = random_password.jwt_secret.result
+    database_url   = "postgresql+asyncpg://${module.rds.db_username}:${module.rds.db_password}@${module.rds.db_endpoint}/${module.rds.db_name}"
+    zen_api_key    = var.zen_api_key
+  })
+
+  depends_on = [module.rds]
+}
 
 # ─── WAF Web ACL ───────────────────────────────────────────────────
 

@@ -34,3 +34,13 @@ output "alb_controller_role_arn" {
   description = "IAM role ARN for the ALB controller (IRSA)"
   value       = aws_iam_role.alb_controller.arn
 }
+
+output "node_security_group_id" {
+  description = "Security group ID attached to the EKS worker nodes"
+  value       = module.eks.node_security_group_id
+}
+
+output "external_secrets_role_arn" {
+  description = "IAM role ARN for the External Secrets Operator (IRSA)"
+  value       = aws_iam_role.external_secrets.arn
+}
