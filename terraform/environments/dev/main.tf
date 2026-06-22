@@ -450,13 +450,25 @@ resource "aws_wafv2_web_acl" "main" {
   }
 }
 
-# ─── Ingress ────────────────────────────────────────────────────────
+# ─── Namespace & Ingress ───────────────────────────────────────────
 
-resource "kubernetes_ingress_v1" "main" {
+resource "kubernetes_namespace_v1" "cost_detective" {
   depends_on = [module.eks]
   metadata {
+    name = "cost-detective"
+    labels = {
+      name                           = "cost-detective"
+      environment                    = "dev"
+      "argocd.argoproj.io/managed-by" = "argocd"
+    }
+  }
+}
+
+resource "kubernetes_ingress_v1" "main" {
+  depends_on = [kubernetes_namespace_v1.cost_detective]
+  metadata {
     name      = "cost-detective"
-    namespace = "cost-detective"
+    namespace = kubernetes_namespace_v1.cost_detective.metadata[0].name
     annotations = {
       "kubernetes.io/ingress.class"                = "alb"
       "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
