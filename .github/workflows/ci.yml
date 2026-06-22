@@ -13,6 +13,7 @@ on:
     paths:
       - 'website/backend/**'
       - 'website/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
