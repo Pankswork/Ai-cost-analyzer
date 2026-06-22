@@ -99,7 +99,12 @@ jobs:
               body: output
             });
 
-      - name: Terraform Apply
+      - name: Terraform Apply (networking first)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: terraform apply -target=module.networking -auto-approve
+        working-directory: terraform/environments/dev
+
+      - name: Terraform Apply (full)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve
         working-directory: terraform/environments/dev
