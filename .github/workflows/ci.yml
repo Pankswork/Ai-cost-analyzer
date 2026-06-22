@@ -1,9 +1,14 @@
-# CI Pipeline — runs on every PR to main
-# Ensures code quality before merging
+# CI Pipeline — runs on every PR and push to main
+# Ensures code quality before merging and before CD
 name: CI — Lint, Test, Build
 
 on:
   pull_request:
+    branches: [main]
+    paths:
+      - 'website/backend/**'
+      - 'website/**'
+  push:
     branches: [main]
     paths:
       - 'website/backend/**'
