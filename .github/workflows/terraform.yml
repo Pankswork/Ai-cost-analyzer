@@ -19,7 +19,6 @@ permissions:
 env:
   AWS_REGION: us-east-1
   EKS_CLUSTER_NAME: cost-detective-dev
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
 
 jobs:
   security-scan:
@@ -61,7 +60,7 @@ jobs:
           terraform_version: '1.11.0'
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v4.2.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}

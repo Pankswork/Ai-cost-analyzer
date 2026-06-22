@@ -13,7 +13,6 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
 
 jobs:
   build-and-push:
@@ -25,7 +24,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v4.2.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
