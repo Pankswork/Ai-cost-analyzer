@@ -16,7 +16,7 @@ async def create_review(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Tool).where(Tool.slug == slug, Tool.is_published == True))
+    result = await db.execute(select(Tool).where(Tool.slug == slug, Tool.is_published))
     tool = result.scalar_one_or_none()
     if not tool:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found")
