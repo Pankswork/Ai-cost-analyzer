@@ -47,6 +47,7 @@ variable "ses_to_email" {
 variable "zen_api_key" {
   description = "API key for opencode Zen (AI analysis)"
   type        = string
+  default     = ""
   sensitive   = true
 }
 
