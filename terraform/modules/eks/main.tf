@@ -218,6 +218,7 @@ resource "aws_iam_role_policy" "alb_controller" {
           "elasticloadbalancing:DescribeRules",
           "elasticloadbalancing:DescribeSSLPolicies",
           "elasticloadbalancing:DescribeTags",
+          "elasticloadbalancing:DescribeListenerAttributes",
           "elasticloadbalancing:DescribeTargetGroupAttributes",
           "elasticloadbalancing:DescribeTargetGroups",
           "elasticloadbalancing:DescribeTargetHealth",
