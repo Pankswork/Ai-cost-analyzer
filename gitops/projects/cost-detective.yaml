@@ -9,6 +9,8 @@ spec:
 
   # Allowed destinations — restrict to specific cluster + namespace
   destinations:
+    - namespace: argocd
+      server: https://kubernetes.default.svc
     - namespace: cost-detective
       server: https://kubernetes.default.svc
     - namespace: monitoring

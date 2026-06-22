@@ -189,6 +189,7 @@ resource "aws_iam_role_policy" "alb_controller" {
           "ec2:DescribeInstances",
           "ec2:DescribeInstanceStatus",
           "ec2:DescribeSecurityGroups",
+          "ec2:DescribeAvailabilityZones",
           "ec2:DescribeSubnets",
           "ec2:DescribeTags",
           "ec2:DescribeVpcs",
