@@ -2,6 +2,7 @@
 node_modules/
 __pycache__/
 *.pyc
+.mypy_cache/
 .venv/
 website/.venv/
 venv/
