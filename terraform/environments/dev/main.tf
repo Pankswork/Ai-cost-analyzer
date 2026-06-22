@@ -457,8 +457,8 @@ resource "kubernetes_namespace_v1" "cost_detective" {
   metadata {
     name = "cost-detective"
     labels = {
-      name                           = "cost-detective"
-      environment                    = "dev"
+      name                            = "cost-detective"
+      environment                     = "dev"
       "argocd.argoproj.io/managed-by" = "argocd"
     }
   }
