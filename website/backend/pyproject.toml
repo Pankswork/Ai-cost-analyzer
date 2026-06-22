@@ -1,0 +1,4 @@
+[tool.mypy]
+ignore_missing_imports = true
+no_implicit_optional = true
+disable_error_code = "arg-type,list-item,assignment"
