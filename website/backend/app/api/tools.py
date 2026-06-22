@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
-from sqlalchemy.orm import selectinload
 from app.db.session import get_db
 from app.models.tool import Category, Tool
 from app.models.pydantic_models import ToolResponse, ToolListResponse, CategoryResponse
@@ -17,8 +16,8 @@ async def list_tools(
     page_size: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Tool).where(Tool.is_published == True)
-    count_query = select(func.count(Tool.id)).where(Tool.is_published == True)
+    query = select(Tool).where(Tool.is_published is True)
+    count_query = select(func.count(Tool.id)).where(Tool.is_published is True)
 
     if category:
         cat_result = await db.execute(select(Category).where(Category.slug == category))
@@ -62,7 +61,7 @@ async def list_tools(
 @router.get("/tools/{slug}", response_model=ToolResponse)
 async def get_tool(slug: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Tool).where(Tool.slug == slug, Tool.is_published == True)
+        select(Tool).where(Tool.slug == slug, Tool.is_published is True)
     )
     tool = result.scalar_one_or_none()
     if not tool:
@@ -100,7 +99,7 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
 async def search_tools(q: str = Query(min_length=1), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Tool).where(
-            Tool.is_published == True,
+            Tool.is_published is True,
             or_(
                 func.to_tsvector("english", Tool.name).op("@@")(
                     func.plainto_tsquery("english", q)

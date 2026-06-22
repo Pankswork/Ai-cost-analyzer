@@ -22,11 +22,11 @@ async def admin_stats(
         select(func.count(ToolSubmission.id)).where(ToolSubmission.status == "pending")
     )).scalar()
     unread_msgs = (await db.execute(
-        select(func.count(ContactMessage.id)).where(ContactMessage.replied == False)
+        select(func.count(ContactMessage.id)).where(ContactMessage.replied is False)
     )).scalar()
     user_count = (await db.execute(select(func.count(User.id)))).scalar()
     sub_count = (await db.execute(
-        select(func.count(NewsletterSubscriber.id)).where(NewsletterSubscriber.subscribed == True)
+        select(func.count(NewsletterSubscriber.id)).where(NewsletterSubscriber.subscribed is True)
     )).scalar()
     return {
         "tools": tool_count, "categories": cat_count,

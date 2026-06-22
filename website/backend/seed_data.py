@@ -11,7 +11,6 @@ os.environ.setdefault("APP_DATABASE_URL", "postgresql+asyncpg://postgres:postgre
 from app.db.session import async_session, engine, Base
 from app.models.tool import Category, Tool
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 TS_FILE = os.path.join(os.path.dirname(__file__), "..", "src", "data", "tools.ts")
 
