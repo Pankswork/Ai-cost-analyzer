@@ -29,6 +29,9 @@ terraform/environments/*/.terraform/
 terraform/environments/*/terraform.tfstate*
 *.tfplan
 
+# Lambda build artifacts
+terraform/modules/**/*.zip
+
 # Docker
 *.tar
 

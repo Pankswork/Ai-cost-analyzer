@@ -450,6 +450,66 @@ resource "aws_wafv2_web_acl" "main" {
   }
 }
 
+# ─── Ingress ────────────────────────────────────────────────────────
+
+resource "kubernetes_ingress_v1" "main" {
+  depends_on = [module.eks]
+  metadata {
+    name      = "cost-detective"
+    namespace = "cost-detective"
+    annotations = {
+      "kubernetes.io/ingress.class"                = "alb"
+      "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"      = "ip"
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/api/health"
+      "alb.ingress.kubernetes.io/success-codes"    = "200"
+      "alb.ingress.kubernetes.io/waf-acl-arn"      = aws_wafv2_web_acl.main.arn
+    }
+  }
+  spec {
+    rule {
+      http {
+        path {
+          path      = "/api"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "backend"
+              port {
+                number = 8000
+              }
+            }
+          }
+        }
+        path {
+          path      = "/ws"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "backend"
+              port {
+                number = 8000
+              }
+            }
+          }
+        }
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "frontend"
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 # ─── ArgoCD GitOps Layer ───────────────────────────────────────────
 
 module "argocd" {

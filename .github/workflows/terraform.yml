@@ -19,6 +19,7 @@ permissions:
 env:
   AWS_REGION: us-east-1
   EKS_CLUSTER_NAME: cost-detective-dev
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
 
 jobs:
   security-scan:
@@ -79,7 +80,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'  
         run: terraform plan -no-color
         working-directory: terraform/environments/dev
         continue-on-error: true
@@ -126,17 +127,4 @@ jobs:
             --set serviceAccount.name=aws-load-balancer-controller \
             --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=$LBC_ROLE_ARN
 
-      - name: Update ingress WAF ARN from Terraform outputs
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          WAF_ARN=$(terraform -chdir=terraform/environments/dev output -raw waf_acl_arn)
-          sed -i "s|\${WAF_ACL_ARN}|$WAF_ARN|" k8s/ingress/ingress.yaml
 
-      - name: Commit ingress ARN updates
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add k8s/ingress/
-          git diff --staged --quiet || git commit -m "chore: update ingress WAF ARN from terraform outputs [skip ci]"
-          git push
