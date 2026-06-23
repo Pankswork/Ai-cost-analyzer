@@ -66,6 +66,10 @@ resource "aws_lambda_function" "rotation" {
   memory_size      = 128
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
+  tracing_config {
+    mode = "Active"
+  }
+
   tags = {
     Name        = "secret-rotation-${var.environment}"
     Environment = var.environment
