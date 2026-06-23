@@ -29,25 +29,39 @@ runs:
     - name: Build image
       shell: bash
       run: |
+        set -eu
+        IMAGE_NAME="${{ inputs.image-name }}"
+        IMAGE_TAG="${{ inputs.image-tag }}"
         CONTEXT="${{ inputs.build-context }}"
         if [ -z "$CONTEXT" ]; then
-          CONTEXT="./${{ inputs.image-name }}"
+          CONTEXT="./${IMAGE_NAME}"
         fi
-        docker build -t ${{ inputs.image-name }}:latest "$CONTEXT"
-        docker tag ${{ inputs.image-name }}:latest ${{ inputs.image-name }}:${{ inputs.image-tag }}
+        docker build -t "${IMAGE_NAME}:latest" "$CONTEXT"
+        docker tag "${IMAGE_NAME}:latest" "${IMAGE_NAME}:${IMAGE_TAG}"
 
     - name: Push to DockerHub
       shell: bash
       run: |
-        echo "${{ inputs.dockerhub-token }}" | docker login -u "${{ inputs.dockerhub-username }}" --password-stdin
-        docker tag ${{ inputs.image-name }}:latest ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:latest
-        docker tag ${{ inputs.image-name }}:${{ inputs.image-tag }} ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:${{ inputs.image-tag }}
-        docker push ${{ inputs.dockerhub-username }}/${{ inputs.image-name }} --all-tags
+        set -eu
+        IMAGE_NAME="${{ inputs.image-name }}"
+        IMAGE_TAG="${{ inputs.image-tag }}"
+        DOCKER_USER="${{ inputs.dockerhub-username }}"
+
+        echo "Logging in to DockerHub as ${DOCKER_USER}"
+        echo "${{ inputs.dockerhub-token }}" | docker login -u "${DOCKER_USER}" --password-stdin
+
+        docker tag "${IMAGE_NAME}:latest" "${DOCKER_USER}/${IMAGE_NAME}:latest"
+        docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+        docker push "${DOCKER_USER}/${IMAGE_NAME}" --all-tags
 
     - name: Push to ECR
       if: inputs.ecr-registry != ''
       shell: bash
       run: |
-        docker tag ${{ inputs.image-name }}:latest ${{ inputs.ecr-registry }}/${{ inputs.image-name }}:latest
-        docker tag ${{ inputs.image-name }}:${{ inputs.image-tag }} ${{ inputs.ecr-registry }}/${{ inputs.image-name }}:${{ inputs.image-tag }}
-        docker push ${{ inputs.ecr-registry }}/${{ inputs.image-name }} --all-tags
+        set -eu
+        IMAGE_NAME="${{ inputs.image-name }}"
+        IMAGE_TAG="${{ inputs.image-tag }}"
+        REGISTRY="${{ inputs.ecr-registry }}"
+        docker tag "${IMAGE_NAME}:latest" "${REGISTRY}/${IMAGE_NAME}:latest"
+        docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+        docker push "${REGISTRY}/${IMAGE_NAME}" --all-tags
