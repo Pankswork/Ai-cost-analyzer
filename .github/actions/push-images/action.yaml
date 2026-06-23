@@ -50,6 +50,8 @@ runs:
         DOCKER_TOKEN: ${{ inputs.dockerhub-token }}
       run: |
         set -eu
+        DOCKER_USER=$(echo "${DOCKER_USER}" | xargs)
+        DOCKER_TOKEN=$(echo "${DOCKER_TOKEN}" | xargs)
         echo "Logging in to DockerHub as ${DOCKER_USER}"
         echo "${DOCKER_TOKEN}" | docker login -u "${DOCKER_USER}" --password-stdin
         docker tag "${IMAGE_NAME}:latest" "${DOCKER_USER}/${IMAGE_NAME}:latest"
