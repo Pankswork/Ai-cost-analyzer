@@ -170,6 +170,8 @@ module "eks" {
   private_subnet_ids = module.networking.private_subnet_ids
   cluster_version    = "1.36"
 
+  backend_secret_arn = aws_secretsmanager_secret.backend.arn
+
   depends_on = [module.networking]
 }
 
@@ -307,6 +309,7 @@ resource "random_password" "jwt_secret" {
   special = false
 }
 
+# checkov:skip=CKV_AWS_149:Dev environment on AWS Free Tier — default AWS-managed key costs $0 vs $1/month for CMK
 resource "aws_secretsmanager_secret" "backend" {
   name = "cost-detective-${var.environment}-backend"
 }
@@ -320,6 +323,20 @@ resource "aws_secretsmanager_secret_version" "backend" {
   })
 
   depends_on = [module.rds]
+}
+
+# ─── Secret Rotation ────────────────────────────────────────────────
+#
+# Rotates the jwt_secret_key every 30 days via a Lambda function.
+# The database_url and zen_api_key fields are preserved as-is.
+
+module "secret_rotation" {
+  source      = "../../modules/secret-rotation"
+  environment = var.environment
+  secret_arn  = aws_secretsmanager_secret.backend.arn
+  source_dir  = "../../../lambda/secret-rotation"
+
+  depends_on = [module.eks]
 }
 
 # ─── WAF Web ACL ───────────────────────────────────────────────────

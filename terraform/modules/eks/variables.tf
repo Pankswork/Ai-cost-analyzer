@@ -25,3 +25,8 @@ variable "aws_region" {
   description = "AWS region for EKS cluster"
   type        = string
 }
+
+variable "backend_secret_arn" {
+  description = "ARN of the backend Secrets Manager secret for ESO"
+  type        = string
+}

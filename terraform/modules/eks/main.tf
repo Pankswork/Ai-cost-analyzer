@@ -362,7 +362,7 @@ resource "aws_iam_role_policy" "external_secrets" {
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret",
         ]
-        Resource = "*"
+        Resource = var.backend_secret_arn
       }
     ]
   })
