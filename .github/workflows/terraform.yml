@@ -103,7 +103,12 @@ jobs:
         run: terraform apply -target=module.networking -auto-approve
         working-directory: terraform/environments/dev
 
-      - name: Terraform Apply (full)
+      - name: Terraform Apply (EKS cluster)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: terraform apply -target=module.eks -auto-approve
+        working-directory: terraform/environments/dev
+
+      - name: Terraform Apply (remaining infra)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve -var="zen_api_key=${{ secrets.ZEN_API_KEY }}"
         working-directory: terraform/environments/dev
