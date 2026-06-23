@@ -3,7 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.db.session import engine, Base
+from app.db.session import engine, async_session, Base
+from app.db.seeder import seed_database
 from app.api import health, auth, tools, submissions, reviews, favorites, misc, analysis
 from app.api.admin import tools as admin_tools
 
@@ -13,8 +14,10 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+        async with async_session() as session:
+            await seed_database(session)
     except Exception as e:
-        print(f"DB connection failed: {e}")
+        print(f"DB initialization failed: {e}")
     yield
     await engine.dispose()
 

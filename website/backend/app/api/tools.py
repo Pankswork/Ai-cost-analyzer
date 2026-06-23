@@ -16,8 +16,8 @@ async def list_tools(
     page_size: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Tool).where(Tool.is_published is True)
-    count_query = select(func.count(Tool.id)).where(Tool.is_published is True)
+    query = select(Tool).where(Tool.is_published == True)
+    count_query = select(func.count(Tool.id)).where(Tool.is_published == True)
 
     if category:
         cat_result = await db.execute(select(Category).where(Category.slug == category))
@@ -61,7 +61,7 @@ async def list_tools(
 @router.get("/tools/{slug}", response_model=ToolResponse)
 async def get_tool(slug: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Tool).where(Tool.slug == slug, Tool.is_published is True)
+        select(Tool).where(Tool.slug == slug, Tool.is_published == True)
     )
     tool = result.scalar_one_or_none()
     if not tool:
@@ -99,7 +99,7 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
 async def search_tools(q: str = Query(min_length=1), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Tool).where(
-            Tool.is_published is True,
+            Tool.is_published == True,
             or_(
                 func.to_tsvector("english", Tool.name).op("@@")(
                     func.plainto_tsquery("english", q)
