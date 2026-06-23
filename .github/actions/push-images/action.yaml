@@ -28,11 +28,13 @@ runs:
   steps:
     - name: Build image
       shell: bash
+      env:
+        IMAGE_NAME: ${{ inputs.image-name }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
+        BUILD_CONTEXT: ${{ inputs.build-context }}
       run: |
         set -eu
-        IMAGE_NAME="${{ inputs.image-name }}"
-        IMAGE_TAG="${{ inputs.image-tag }}"
-        CONTEXT="${{ inputs.build-context }}"
+        CONTEXT="${BUILD_CONTEXT}"
         if [ -z "$CONTEXT" ]; then
           CONTEXT="./${IMAGE_NAME}"
         fi
@@ -41,15 +43,15 @@ runs:
 
     - name: Push to DockerHub
       shell: bash
+      env:
+        IMAGE_NAME: ${{ inputs.image-name }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
+        DOCKER_USER: ${{ inputs.dockerhub-username }}
+        DOCKER_TOKEN: ${{ inputs.dockerhub-token }}
       run: |
         set -eu
-        IMAGE_NAME="${{ inputs.image-name }}"
-        IMAGE_TAG="${{ inputs.image-tag }}"
-        DOCKER_USER="${{ inputs.dockerhub-username }}"
-
         echo "Logging in to DockerHub as ${DOCKER_USER}"
-        echo "${{ inputs.dockerhub-token }}" | docker login -u "${DOCKER_USER}" --password-stdin
-
+        echo "${DOCKER_TOKEN}" | docker login -u "${DOCKER_USER}" --password-stdin
         docker tag "${IMAGE_NAME}:latest" "${DOCKER_USER}/${IMAGE_NAME}:latest"
         docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
         docker push "${DOCKER_USER}/${IMAGE_NAME}" --all-tags
@@ -57,11 +59,12 @@ runs:
     - name: Push to ECR
       if: inputs.ecr-registry != ''
       shell: bash
+      env:
+        IMAGE_NAME: ${{ inputs.image-name }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
+        REGISTRY: ${{ inputs.ecr-registry }}
       run: |
         set -eu
-        IMAGE_NAME="${{ inputs.image-name }}"
-        IMAGE_TAG="${{ inputs.image-tag }}"
-        REGISTRY="${{ inputs.ecr-registry }}"
         docker tag "${IMAGE_NAME}:latest" "${REGISTRY}/${IMAGE_NAME}:latest"
         docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
         docker push "${REGISTRY}/${IMAGE_NAME}" --all-tags
