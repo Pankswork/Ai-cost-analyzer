@@ -125,3 +125,6 @@ npm run dev
 | **Total** | **~$92/month** |
 
 *With $130 AWS credit, you can run the full stack for ~15 days.*
+
+
+# end
