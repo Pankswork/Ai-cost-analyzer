@@ -132,8 +132,14 @@ async def get_report(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
 
     import json
-    resources_raw = report.resources
-    recommendations_raw = report.recommendations
+
+    def _as_list(raw: str | list | None) -> list:
+        if not raw:
+            return []
+        if isinstance(raw, list):
+            return raw
+        parsed = json.loads(raw)
+        return parsed if isinstance(parsed, list) else []
 
     return CostReportDetailResponse(
         id=report.id,
@@ -147,8 +153,8 @@ async def get_report(
         completed_at=report.completed_at.isoformat() if report.completed_at else None,
         aws_account_id=report.aws_account_id or "",
         aws_region=report.aws_region or "",
-        resources=json.loads(resources_raw) if resources_raw and isinstance(resources_raw, str) else (resources_raw if isinstance(resources_raw, list) else []),
-        recommendations=json.loads(recommendations_raw) if recommendations_raw and isinstance(recommendations_raw, str) else (recommendations_raw if isinstance(recommendations_raw, list) else []),
+        resources=_as_list(report.resources),
+        recommendations=_as_list(report.recommendations),
     )
 
 
