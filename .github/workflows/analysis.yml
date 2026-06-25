@@ -5,29 +5,43 @@ on:
 
 permissions:
   id-token: write
+  contents: read
 
 env:
   AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: cost-detective-dev
 
 jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install boto3 httpx
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        run: |
+          curl -sLO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Configure kubeconfig
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
+
+      - name: Get ALB URL
+        run: |
+          ALB_URL=$(kubectl get ingress cost-detective -n cost-detective \
+            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          echo "ALB_URL=$ALB_URL" >> $GITHUB_ENV
+
       - name: Run cost analysis
         run: |
-          curl -X POST http://backend:8000/api/analysis/run \
+          curl -s -X POST "http://$ALB_URL/api/analysis/run" \
             -H "Authorization: Bearer $ADMIN_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{"triggered_by": "github-actions"}'

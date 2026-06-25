@@ -43,32 +43,38 @@ class AiAnalyzer:
             return []
 
         resource_text = json.dumps(resources, indent=2)
-        response = await self.client.post(
-            ZEN_API_URL,
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": self.model,
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": resource_text},
-                ],
-                "temperature": 0.1,
-                "max_tokens": 4096,
-            },
-        )
-        response.raise_for_status()
-        data = response.json()
-        content = data["choices"][0]["message"]["content"]
-
-        if "```json" in content:
-            content = content.split("```json")[1].split("```")[0].strip()
-        elif "```" in content:
-            content = content.split("```")[1].split("```")[0].strip()
-
         try:
+            response = await self.client.post(
+                ZEN_API_URL,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": self.model,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": resource_text},
+                    ],
+                    "temperature": 0.1,
+                    "max_tokens": 4096,
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            content = data["choices"][0]["message"]["content"]
+
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+
             return json.loads(content)
-        except json.JSONDecodeError:
-            return []
+        except httpx.HTTPStatusError as e:
+            raise RuntimeError(
+                f"ZEN API returned {e.response.status_code}: {e.response.text[:500]}"
+            )
+        except (json.JSONDecodeError, KeyError, IndexError) as e:
+            raise RuntimeError(
+                f"ZEN API returned an unexpected response format: {e}"
+            )
