@@ -94,4 +94,4 @@ jobs:
           git config user.email "actions@github.com"
           git add k8s/
           git diff --staged --quiet || git commit -m "chore: update image tags to ${{ env.IMAGE_TAG }} [skip ci]"
-          git push
+          git push origin HEAD:"${{ github.event.workflow_run.head_branch || github.ref_name }}"
