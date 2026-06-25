@@ -2,7 +2,7 @@ import json
 import os
 import re
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, text
+from sqlalchemy import text
 from app.models.tool import Category, Tool
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "tools.json")
