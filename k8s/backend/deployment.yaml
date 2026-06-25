@@ -33,7 +33,7 @@ spec:
 
       containers:
         - name: backend
-          image: 052301220733.dkr.ecr.us-east-1.amazonaws.com/backend:4f6996e04a248e0a8575cf18b3952f7e7458c6ca
+          image: 052301220733.dkr.ecr.us-east-1.amazonaws.com/backend:bb54b85dcbdf7bbbb835633bc305e761a82c4c30
           ports:
             - containerPort: 8000
               protocol: TCP
