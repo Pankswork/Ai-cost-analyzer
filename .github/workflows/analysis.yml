@@ -39,11 +39,15 @@ jobs:
             -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           echo "ALB_URL=$ALB_URL" >> $GITHUB_ENV
 
+      - name: Get admin API key from cluster
+        run: |
+          ADMIN_API_KEY=$(kubectl get secret backend-secrets -n cost-detective \
+            -o jsonpath='{.data.APP_ADMIN_API_KEY}' | base64 -d)
+          echo "ADMIN_API_KEY=$ADMIN_API_KEY" >> $GITHUB_ENV
+
       - name: Run cost analysis
         run: |
           curl -s -X POST "http://$ALB_URL/api/analysis/run" \
             -H "Authorization: Bearer $ADMIN_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{"triggered_by": "github-actions"}'
-        env:
-          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}

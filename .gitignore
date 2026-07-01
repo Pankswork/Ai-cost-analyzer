@@ -45,3 +45,7 @@ terraform/modules/**/*.zip
 
 # opencode config
 .opencode/
+
+website/.dockerignore
+website/backend/.dockerignore
+

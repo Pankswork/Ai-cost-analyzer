@@ -309,6 +309,11 @@ resource "random_password" "jwt_secret" {
   special = false
 }
 
+resource "random_password" "admin_api_key" {
+  length  = 32
+  special = false
+}
+
 # checkov:skip=CKV_AWS_149:Dev environment on AWS Free Tier — default AWS-managed key costs $0 vs $1/month for CMK
 resource "aws_secretsmanager_secret" "backend" {
   name = "cost-detective-${var.environment}-backend"
@@ -320,6 +325,7 @@ resource "aws_secretsmanager_secret_version" "backend" {
     jwt_secret_key = random_password.jwt_secret.result
     database_url   = "postgresql+asyncpg://${module.rds.db_username}:${module.rds.db_password}@${module.rds.db_endpoint}/${module.rds.db_name}"
     zen_api_key    = var.zen_api_key
+    admin_api_key  = random_password.admin_api_key.result
   })
 
   depends_on = [module.rds]

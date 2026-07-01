@@ -40,7 +40,9 @@ class AiAnalyzer:
 
     async def analyze(self, resources: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not self.api_key:
-            return []
+            raise RuntimeError(
+                "ZEN_API_KEY is not configured — set APP_ZEN_API_KEY environment variable"
+            )
 
         resource_text = json.dumps(resources, indent=2)
         try:
