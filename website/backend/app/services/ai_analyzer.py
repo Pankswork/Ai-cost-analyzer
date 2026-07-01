@@ -1,7 +1,10 @@
 import json
+import logging
 import httpx
 from typing import List, Dict, Any
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 ZEN_API_URL = "https://opencode.ai/zen/v1/chat/completions"
 
@@ -59,12 +62,17 @@ class AiAnalyzer:
                         {"role": "user", "content": resource_text},
                     ],
                     "temperature": 0.1,
-                    "max_tokens": 4096,
+                    "max_tokens": 32768,
                 },
             )
             response.raise_for_status()
+            raw_body = response.text
+            logger.info(f"ZEN API response: status={response.status_code}, body_len={len(raw_body)}, body_preview={raw_body[:200]}")
+            if not raw_body.strip():
+                raise RuntimeError("ZEN API returned empty response body")
             data = response.json()
-            content = data["choices"][0]["message"]["content"]
+            message = data["choices"][0]["message"]
+            content = message.get("content") or message.get("reasoning_content", "")
 
             if "```json" in content:
                 content = content.split("```json")[1].split("```")[0].strip()
