@@ -7,6 +7,7 @@ from app.db.session import engine, async_session, Base
 from app.db.seeder import seed_database
 from app.api import health, auth, tools, submissions, reviews, favorites, misc, analysis
 from app.api.admin import tools as admin_tools
+from prometheus_fastapi_instrumentator import Instrumentator
 
 
 @asynccontextmanager
@@ -41,6 +42,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+Instrumentator().instrument(app).expose(app)
 
 app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
