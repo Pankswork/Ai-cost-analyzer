@@ -3,7 +3,7 @@ import httpx
 from typing import List, Dict, Any
 from app.config import settings
 
-ZEN_API_URL = "https://api.opencode.ai/v1/chat/completions"
+ZEN_API_URL = "https://opencode.ai/zen/v1/chat/completions"
 
 SYSTEM_PROMPT = """You are an AWS Cloud Cost Optimization Expert with 15 years of experience.
 
