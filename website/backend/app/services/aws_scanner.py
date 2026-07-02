@@ -2,6 +2,20 @@ import aioboto3
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional
 from app.config import settings
+from app.services.terraform_discovery import get_active_scanner_methods
+
+ALL_SCANNER_METHODS = [
+    "_scan_ec2",
+    "_scan_rds",
+    "_scan_ebs",
+    "_scan_eips",
+    "_scan_load_balancers",
+    "_scan_nat_gateways",
+    "_scan_eks_clusters",
+    "_scan_ebs_snapshots",
+    "_scan_s3_buckets",
+    "_scan_cloudwatch_log_groups",
+]
 
 
 class AwsResourceScanner:
@@ -11,17 +25,15 @@ class AwsResourceScanner:
     async def scan_resources(self, region: Optional[str] = None) -> List[Dict[str, Any]]:
         region = region or self.region
         session = aioboto3.Session()
+        active = get_active_scanner_methods()
+        if active:
+            methods = [m for m in ALL_SCANNER_METHODS if m in active]
+        else:
+            methods = ALL_SCANNER_METHODS
         resources = []
-        resources.extend(await self._scan_ec2(session, region))
-        resources.extend(await self._scan_rds(session, region))
-        resources.extend(await self._scan_ebs(session, region))
-        resources.extend(await self._scan_eips(session, region))
-        resources.extend(await self._scan_load_balancers(session, region))
-        resources.extend(await self._scan_nat_gateways(session, region))
-        resources.extend(await self._scan_eks_clusters(session, region))
-        resources.extend(await self._scan_ebs_snapshots(session, region))
-        resources.extend(await self._scan_s3_buckets(session, region))
-        resources.extend(await self._scan_cloudwatch_log_groups(session, region))
+        for method_name in methods:
+            method = getattr(self, method_name)
+            resources.extend(await method(session, region))
         return resources
 
     async def _fetch_ec2_pricing(

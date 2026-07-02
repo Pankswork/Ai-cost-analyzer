@@ -51,6 +51,9 @@ jobs:
       - name: Get AWS account ID
         run: echo "AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> $GITHUB_ENV
 
+      - name: Parse Terraform to discover scanner resource types
+        run: python website/backend/scripts/parse_terraform.py
+
       - name: Build, tag, and push backend
         uses: ./.github/actions/push-images
         with:
