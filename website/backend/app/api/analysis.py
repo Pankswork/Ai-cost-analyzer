@@ -42,11 +42,7 @@ async def _run_cost_analysis(db: AsyncSession, triggered_by: str = "manual") -> 
         report.total_resources = len(resources)
         report.total_recommendations = len(recommendations)
         report.total_estimated_savings = total_savings
-        report.resources = json.dumps([{
-            "type": r.get("type"), "resource_id": r.get("resource_id"),
-            "name": r.get("name"), "state": r.get("state"),
-            "instance_type": r.get("instance_type"),
-        } for r in resources])
+        report.resources = json.dumps(resources)
         report.recommendations = json.dumps(recommendations)
         report.completed_at = datetime.now(timezone.utc)
 
