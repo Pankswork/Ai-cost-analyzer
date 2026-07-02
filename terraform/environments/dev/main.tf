@@ -51,6 +51,12 @@ variable "zen_api_key" {
   sensitive   = true
 }
 
+variable "admin_emails" {
+  description = "Comma-separated emails that auto-become admin on registration"
+  type        = string
+  default     = ""
+}
+
 # ─── Data Sources ──────────────────────────────────────────────────
 
 data "aws_caller_identity" "current" {}
@@ -326,6 +332,7 @@ resource "aws_secretsmanager_secret_version" "backend" {
     database_url   = "postgresql+asyncpg://${module.rds.db_username}:${module.rds.db_password}@${module.rds.db_endpoint}/${module.rds.db_name}"
     zen_api_key    = var.zen_api_key
     admin_api_key  = random_password.admin_api_key.result
+    admin_emails   = var.admin_emails
   })
 
   depends_on = [module.rds]

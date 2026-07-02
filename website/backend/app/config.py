@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     slack_webhook_url: str = ""
     ses_from_email: str = "noreply@bestfreeaifor.com"
     admin_api_key: str = ""
+    admin_emails: str = ""
 
     model_config = {"env_prefix": "APP_"}
 
