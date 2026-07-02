@@ -3,12 +3,12 @@ import aioboto3
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional
 from app.config import settings
-
-logger = logging.getLogger(__name__)
 from app.services.terraform_discovery import (
     is_terraform_managed,
     get_terraform_resource_types,
 )
+
+logger = logging.getLogger(__name__)
 
 ALL_SCANNER_METHODS = [
     "_scan_ec2",
