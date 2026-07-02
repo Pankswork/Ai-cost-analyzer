@@ -314,6 +314,8 @@ resource "aws_iam_role_policy" "backend" {
           "elasticloadbalancing:DescribeTargetGroups",
           "s3:ListAllMyBuckets",
           "tag:GetResources",
+          "cloudwatch:GetMetricStatistics",
+          "pricing:GetProducts",
         ]
         Resource = "*"
       }
