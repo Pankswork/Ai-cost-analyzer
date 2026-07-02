@@ -102,17 +102,13 @@ async def trigger_analysis(
     db: AsyncSession = Depends(get_db),
 ):
     triggered_by = body.triggered_by
-    report_uuid = str(uuid.uuid4())
-    report = CostReport(report_uuid=report_uuid, status="pending", triggered_by=triggered_by)
-    db.add(report)
-    await db.commit()
 
     async def run():
         async with __import__("app.db.session", fromlist=["async_session"]).async_session() as session:
             await _run_cost_analysis(session, triggered_by=triggered_by)
 
     background_tasks.add_task(run)
-    return AnalysisRunResponse(report_uuid=report_uuid, status="started",
+    return AnalysisRunResponse(report_uuid="", status="started",
                                 message="Analysis started in background")
 
 

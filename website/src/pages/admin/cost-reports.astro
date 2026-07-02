@@ -10,16 +10,52 @@ import Footer from '../../components/Footer.astro';
     <div class="container-main">
       <div id="auth-guard" class="hidden"><p class="text-center py-16">Access denied.</p></div>
       <div id="admin-content" class="hidden">
-        <div class="flex items-center justify-between mb-8">
-          <h1 class="text-display-xl text-ink">Cost Analysis Reports</h1>
-          <a href="/admin" class="text-body-sm text-body underline">Back to Admin</a>
+        <!-- List View -->
+        <div id="list-view">
+          <div class="flex items-center justify-between mb-8">
+            <h1 class="text-display-xl text-ink">Cost Analysis Reports</h1>
+            <a href="/admin" class="text-body-sm text-body underline">Back to Admin</a>
+          </div>
+          <div class="mb-6">
+            <button id="run-analysis-btn" class="px-6 py-2.5 rounded-lg bg-ink text-white dark:text-canvas font-medium hover:opacity-90 transition-opacity cursor-pointer">
+              Run Cost Analysis Now
+            </button>
+          </div>
+          <div class="space-y-4" id="reports-list"><p class="text-body-md text-body">Loading...</p></div>
         </div>
-        <div class="mb-6">
-          <button id="run-analysis-btn" class="px-6 py-2.5 rounded-lg bg-ink text-white dark:text-canvas font-medium hover:opacity-90 transition-opacity cursor-pointer">
-            Run Cost Analysis Now
-          </button>
+
+        <!-- Detail View -->
+        <div id="detail-view" class="hidden">
+          <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+              <a href="/admin/cost-reports" class="text-body-sm text-body underline">&larr; Back to Reports</a>
+              <h1 class="text-display-xl text-ink">Cost Report Detail</h1>
+            </div>
+            <span id="status-badge" class="px-2 py-0.5 rounded-full text-caption-mono">loading...</span>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-canvas border border-hairline rounded-xl p-4 shadow-card text-center">
+              <div class="text-2xl font-bold text-ink" id="detail-resources">-</div>
+              <div class="text-body-sm text-body">Resources Scanned</div>
+            </div>
+            <div class="bg-canvas border border-hairline rounded-xl p-4 shadow-card text-center">
+              <div class="text-2xl font-bold text-ink" id="detail-issues">-</div>
+              <div class="text-body-sm text-body">Issues Found</div>
+            </div>
+            <div class="bg-canvas border border-hairline rounded-xl p-4 shadow-card text-center">
+              <div class="text-2xl font-bold text-green-600" id="detail-savings">-</div>
+              <div class="text-body-sm text-body">Monthly Savings</div>
+            </div>
+          </div>
+          <div class="bg-canvas border border-hairline rounded-xl p-4 shadow-card mb-8">
+            <h2 class="text-display-sm text-ink mb-4">Resources Scanned</h2>
+            <div id="resources-table" class="overflow-x-auto"><p class="text-body-md text-body">Loading...</p></div>
+          </div>
+          <div class="bg-canvas border border-hairline rounded-xl p-4 shadow-card">
+            <h2 class="text-display-sm text-ink mb-4">AI Recommendations</h2>
+            <div id="recommendations-list"><p class="text-body-md text-body">Loading...</p></div>
+          </div>
         </div>
-        <div class="space-y-4" id="reports-list"><p class="text-body-md text-body">Loading...</p></div>
       </div>
     </div>
   </main>
@@ -33,6 +69,20 @@ import { api } from '../../lib/api';
 initAuth().then(async () => {
   if (!isAdmin()) { document.getElementById('auth-guard')!.classList.remove('hidden'); return; }
   document.getElementById('admin-content')!.classList.remove('hidden');
+
+  function showView(view: 'list' | 'detail') {
+    document.getElementById('list-view')!.classList.toggle('hidden', view !== 'list');
+    document.getElementById('detail-view')!.classList.toggle('hidden', view !== 'detail');
+  }
+
+  const pathId = window.location.pathname.split('/').pop();
+  if (pathId && pathId !== 'cost-reports' && !isNaN(Number(pathId))) {
+    showView('detail');
+    loadReportDetail(Number(pathId));
+  } else {
+    showView('list');
+    loadReports();
+  }
 
   document.getElementById('run-analysis-btn')?.addEventListener('click', async () => {
     const btn = document.getElementById('run-analysis-btn') as HTMLButtonElement;
@@ -67,6 +117,76 @@ initAuth().then(async () => {
       </a>
     `).join('');
   }
-  loadReports();
+
+  async function loadReportDetail(id: number) {
+    try {
+      const report = await api.analysis.report(id);
+
+      document.getElementById('status-badge')!.textContent = report.status;
+      document.getElementById('status-badge')!.className = `px-2 py-0.5 rounded-full text-caption-mono ${report.status === 'completed' ? 'bg-green-100 text-green-800' : report.status === 'running' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`;
+      document.getElementById('detail-resources')!.textContent = String(report.total_resources);
+      document.getElementById('detail-issues')!.textContent = String(report.total_recommendations);
+      document.getElementById('detail-savings')!.textContent = `$${report.total_estimated_savings.toFixed(2)}`;
+
+      const resources = report.resources || [];
+      const resourcesContainer = document.getElementById('resources-table')!;
+      if (resources.length === 0) {
+        resourcesContainer.innerHTML = '<p class="text-body-md text-body">No resources scanned.</p>';
+      } else {
+        resourcesContainer.innerHTML = `
+          <table class="w-full text-left text-body-sm">
+            <thead><tr class="text-caption-mono text-mute border-b border-hairline">
+              <th class="pb-2 pr-4">Type</th>
+              <th class="pb-2 pr-4">Name</th>
+              <th class="pb-2 pr-4">State</th>
+              <th class="pb-2 pr-4">Type</th>
+              <th class="pb-2 pr-4">Cost/mo</th>
+              <th class="pb-2">CPU</th>
+            </tr></thead>
+            <tbody>${resources.map((r: any) => {
+              const specs = r.specs || {};
+              const metrics = r.metrics || {};
+              const cost = specs.monthly_cost ? `$${specs.monthly_cost.toFixed(2)}` : '-';
+              const cpu = metrics.avg_cpu_pct != null ? `${metrics.avg_cpu_pct}%` : '-';
+              return `<tr class="border-b border-hairline/50">
+                <td class="py-2 pr-4"><span class="px-1.5 py-0.5 rounded text-caption-mono bg-gray-100 text-gray-600">${r.type || '-'}</span></td>
+                <td class="py-2 pr-4">${r.name || '-'}</td>
+                <td class="py-2 pr-4"><span class="px-1.5 py-0.5 rounded text-caption-mono ${r.state === 'running' || r.state === 'available' || r.state === 'in-use' || r.state === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}">${r.state || '-'}</span></td>
+                <td class="py-2 pr-4 font-mono text-caption-mono">${r.instance_type || '-'}</td>
+                <td class="py-2 pr-4">${cost}</td>
+                <td class="py-2">${cpu}</td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table>`;
+      }
+
+      const recommendations = report.recommendations || [];
+      const recsContainer = document.getElementById('recommendations-list')!;
+      if (recommendations.length === 0) {
+        recsContainer.innerHTML = '<p class="text-body-md text-body">No recommendations. Your AWS setup looks clean!</p>';
+      } else {
+        const severityColors: Record<string, string> = {
+          critical: 'bg-red-100 text-red-800', high: 'bg-orange-100 text-orange-800',
+          medium: 'bg-yellow-100 text-yellow-800', low: 'bg-blue-100 text-blue-800',
+        };
+        recsContainer.innerHTML = recommendations.map((rec: any) => `
+          <div class="border border-hairline rounded-lg p-4 mb-4 shadow-card">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <span class="px-1.5 py-0.5 rounded text-caption-mono ${severityColors[rec.severity] || 'bg-gray-100 text-gray-600'}">${rec.severity || 'info'}</span>
+                <span class="text-body-sm text-mute ml-2">${rec.resource_type || ''} — ${rec.resource_id || ''}</span>
+              </div>
+              <span class="text-body-sm font-bold ${(rec.estimated_monthly_savings || 0) > 0 ? 'text-green-600' : 'text-body'}">$${(rec.estimated_monthly_savings || 0).toFixed(2)}/mo</span>
+            </div>
+            <p class="text-body-md text-ink mb-1">${rec.issue || ''}</p>
+            <p class="text-body-sm text-body mb-3">${rec.explanation || ''}</p>
+            ${rec.fix_command ? `<div class="bg-gray-50 dark:bg-gray-900 rounded p-3"><code class="text-caption-mono text-body">${rec.fix_command}</code></div>` : ''}
+          </div>
+        `).join('');
+      }
+    } catch (err) {
+      document.getElementById('recommendations-list')!.innerHTML = `<p class="text-body-md text-body text-red-600">Failed to load report: ${err}</p>`;
+    }
+  }
 });
 </script>
