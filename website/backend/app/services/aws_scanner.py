@@ -163,6 +163,70 @@ class AwsResourceScanner:
         except Exception:
             return None
 
+    async def _fetch_s3_storage_metrics(
+        self, session: aioboto3.Session, region: str, bucket_name: str
+    ) -> Optional[Dict[str, Any]]:
+        try:
+            end_time = datetime.now(timezone.utc)
+            start_time = end_time - timedelta(days=2)
+            async with session.client("cloudwatch", region_name=region) as cw:
+                response = await cw.get_metric_statistics(
+                    Namespace="AWS/S3",
+                    MetricName="BucketSizeBytes",
+                    Dimensions=[
+                        {"Name": "BucketName", "Value": bucket_name},
+                        {"Name": "StorageType", "Value": "StandardStorage"},
+                    ],
+                    StartTime=start_time,
+                    EndTime=end_time,
+                    Period=86400,
+                    Statistics=["Average"],
+                )
+                datapoints = response.get("Datapoints", [])
+                if not datapoints:
+                    return None
+                sorted_dps = sorted(datapoints, key=lambda x: x["Timestamp"], reverse=True)
+                total_bytes = sorted_dps[0].get("Average", 0)
+                total_gb = total_bytes / (1024 ** 3)
+                price_per_gb = 0.023
+                return {
+                    "total_bytes": int(total_bytes),
+                    "total_gb": round(total_gb, 4),
+                    "hourly_cost": round(total_gb * price_per_gb / 730, 6),
+                    "monthly_cost": round(total_gb * price_per_gb, 2),
+                }
+        except Exception:
+            return None
+
+    async def _fetch_logs_ingestion_metrics(
+        self, session: aioboto3.Session, region: str, log_group_name: str
+    ) -> Optional[Dict[str, float]]:
+        try:
+            end_time = datetime.now(timezone.utc)
+            start_time = end_time - timedelta(days=30)
+            async with session.client("cloudwatch", region_name=region) as cw:
+                response = await cw.get_metric_statistics(
+                    Namespace="AWS/Logs",
+                    MetricName="IncomingBytes",
+                    Dimensions=[{"Name": "LogGroupName", "Value": log_group_name}],
+                    StartTime=start_time,
+                    EndTime=end_time,
+                    Period=86400,
+                    Statistics=["Sum"],
+                )
+                datapoints = response.get("Datapoints", [])
+                if not datapoints:
+                    return None
+                total_bytes = sum(dp.get("Sum", 0) for dp in datapoints)
+                total_gb = total_bytes / (1024 ** 3)
+                price_per_gb = 0.50
+                return {
+                    "ingested_gb_30d": round(total_gb, 4),
+                    "ingestion_cost_30d": round(total_gb * price_per_gb, 2),
+                }
+        except Exception:
+            return None
+
     async def _scan_ec2(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
         instances = []
         pricing_cache: Dict[str, Optional[float]] = {}
@@ -400,6 +464,9 @@ class AwsResourceScanner:
                     bucket_region = loc.get("LocationConstraint") or "us-east-1"
                 except Exception:
                     pass
+                storage = await self._fetch_s3_storage_metrics(
+                    session, bucket_region, bucket["Name"]
+                )
                 buckets.append({
                     "type": "s3",
                     "resource_id": bucket["Name"],
@@ -409,9 +476,10 @@ class AwsResourceScanner:
                     "created": bucket["CreationDate"].isoformat(),
                     "tags": {},
                     "specs": {
-                        "hourly_cost": None,
-                        "monthly_cost": None,
+                        "hourly_cost": storage["hourly_cost"] if storage else None,
+                        "monthly_cost": storage["monthly_cost"] if storage else None,
                     },
+                    "metrics": storage,
                 })
         return buckets
 
@@ -424,7 +492,12 @@ class AwsResourceScanner:
                     retention = lg.get("retentionInDays")
                     name = lg.get("logGroupName", "")
                     stored_gb = lg.get("storedBytes", 0) / (1024 ** 3)
-                    monthly = round(stored_gb * 0.03, 2)
+                    storage_cost = round(stored_gb * 0.03, 2)
+                    ingestion = await self._fetch_logs_ingestion_metrics(
+                        session, region, name
+                    )
+                    ingested_cost = ingestion["ingestion_cost_30d"] if ingestion else 0
+                    total_monthly = storage_cost + ingested_cost
                     log_groups.append({
                         "type": "cloudwatch_log_group",
                         "resource_id": name,
@@ -436,8 +509,13 @@ class AwsResourceScanner:
                         "tags": lg.get("tags", {}),
                         "specs": {
                             "retention_days": retention,
-                            "hourly_cost": round(monthly / 730, 6),
-                            "monthly_cost": monthly,
+                            "hourly_cost": round(total_monthly / 730, 6),
+                            "monthly_cost": total_monthly,
+                        },
+                        "metrics": {
+                            "storage_cost": storage_cost,
+                            "ingested_gb_30d": ingestion["ingested_gb_30d"] if ingestion else None,
+                            "ingestion_cost_30d": ingested_cost,
                         },
                     })
         return log_groups
