@@ -45,16 +45,6 @@ jobs:
           DOCKER_TOKEN=$(echo "${DOCKER_TOKEN}" | xargs)
           echo "${DOCKER_TOKEN}" | docker login -u "${DOCKER_USER}" --password-stdin
 
-      - name: Ensure ECR repositories exist
-        run: |
-          for repo in backend frontend; do
-            aws ecr describe-repositories --repository-names "$repo" --region ${{ env.AWS_REGION }} >/dev/null 2>&1 \
-              || aws ecr create-repository \
-                   --repository-name "$repo" \
-                   --image-scanning-configuration scanOnPush=true \
-                   --region ${{ env.AWS_REGION }}
-          done
-
       - name: Get commit SHA
         run: echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha || github.sha }}" >> $GITHUB_ENV
 
@@ -102,6 +92,18 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+          git fetch origin "${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          git checkout "${{ github.event.workflow_run.head_branch || github.ref_name }}"
           git add k8s/
           git diff --staged --quiet || git commit -m "chore: update image tags to ${{ env.IMAGE_TAG }} [skip ci]"
-          git push origin HEAD:"${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          git push origin "${{ github.event.workflow_run.head_branch || github.ref_name }}"
+
+      - name: Configure kubeconfig
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name cost-detective-dev
+
+      - name: Apply ArgoCD Application manifests
+        run: |
+          kubectl apply -f gitops/projects/cost-detective.yaml
+          kubectl apply -f gitops/root.yaml
+          kubectl apply -f gitops/apps/backend-app.yaml
+          kubectl apply -f gitops/apps/frontend-app.yaml
