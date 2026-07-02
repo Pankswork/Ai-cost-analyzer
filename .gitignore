@@ -49,3 +49,6 @@ terraform/modules/**/*.zip
 website/.dockerignore
 website/backend/.dockerignore
 
+# Terraform state at root level
+*.tfstate
+*.tfstate.*
