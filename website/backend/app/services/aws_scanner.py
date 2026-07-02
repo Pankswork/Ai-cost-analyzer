@@ -1,7 +1,10 @@
+import logging
 import aioboto3
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 from app.services.terraform_discovery import (
     is_terraform_managed,
     get_terraform_resource_types,
@@ -31,7 +34,11 @@ class AwsResourceScanner:
         resources = []
         for method_name in ALL_SCANNER_METHODS:
             method = getattr(self, method_name)
-            scanned = await method(session, region)
+            try:
+                scanned = await method(session, region)
+            except Exception as e:
+                logger.warning("Scanner %s failed: %s", method_name, e)
+                continue
             terraform_managed = is_terraform_managed(method_name)
             tf_resource_types = get_terraform_resource_types(method_name)
             for r in scanned:
