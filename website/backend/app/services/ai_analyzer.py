@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import date
 import httpx
 from typing import List, Dict, Any
 from app.config import settings
@@ -47,7 +48,13 @@ class AiAnalyzer:
                 "ZEN_API_KEY is not configured — set APP_ZEN_API_KEY environment variable"
             )
 
-        resource_text = json.dumps(resources, indent=2)
+        today = date.today()
+        resource_text = (
+            f"Today's date: {today.isoformat()}\n"
+            f"IMPORTANT: Use current AWS pricing and instance types available as of {today.isoformat()}.\n"
+            f"Do NOT use outdated pricing — if a price looks wrong, use today's AWS public pricing.\n\n"
+            f"AWS Resources to analyze:\n{json.dumps(resources, indent=2)}"
+        )
         try:
             response = await self.client.post(
                 ZEN_API_URL,
