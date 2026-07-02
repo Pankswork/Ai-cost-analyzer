@@ -228,47 +228,78 @@ class AwsResourceScanner:
 
     async def _scan_ebs(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
         volumes = []
+        ebs_pricing = {
+            "gp3": 0.08, "gp2": 0.08,
+            "io1": 0.125, "io2": 0.125,
+            "st1": 0.045, "sc1": 0.015,
+            "standard": 0.05,
+        }
         async with session.client("ec2", region_name=region) as ec2:
             paginator = ec2.get_paginator("describe_volumes")
             async for page in paginator.paginate():
                 for vol in page["Volumes"]:
+                    vol_type = vol["VolumeType"]
+                    size = vol["Size"]
+                    iops = vol.get("Iops", 0)
+                    price_per_gb = ebs_pricing.get(vol_type, 0.08)
+                    monthly = round(size * price_per_gb, 2)
+                    if vol_type in ("io1", "io2"):
+                        monthly += round(iops * 0.065, 2)
                     volumes.append({
                         "type": "ebs",
                         "resource_id": vol["VolumeId"],
                         "name": vol["VolumeId"],
                         "region": region,
                         "state": vol["State"],
-                        "volume_type": vol["VolumeType"],
-                        "size_gb": vol["Size"],
+                        "volume_type": vol_type,
+                        "size_gb": size,
                         "attached": len(vol.get("Attachments", [])) > 0,
                         "tags": {t["Key"]: t["Value"] for t in vol.get("Tags", [])},
-                        "specs": {"iops": vol.get("Iops", 0)},
+                        "specs": {
+                            "iops": iops,
+                            "hourly_cost": round(monthly / 730, 6) if monthly else None,
+                            "monthly_cost": monthly,
+                        },
                     })
         return volumes
 
     async def _scan_eips(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
         eips = []
+        unassociated_cost = 0.005
         async with session.client("ec2", region_name=region) as ec2:
             response = await ec2.describe_addresses()
             for address in response["Addresses"]:
+                associated = bool(address.get("AssociationId"))
+                hourly = unassociated_cost if not associated else 0
                 eips.append({
                     "type": "eip",
                     "resource_id": address["AllocationId"],
                     "name": address.get("PublicIp", address["AllocationId"]),
                     "region": region,
-                    "state": "associated" if address.get("AssociationId") else "unassociated",
+                    "state": "associated" if associated else "unassociated",
                     "public_ip": address.get("PublicIp", ""),
                     "tags": {t["Key"]: t["Value"] for t in address.get("Tags", [])},
-                    "specs": {"domain": address.get("Domain", "")},
+                    "specs": {
+                        "domain": address.get("Domain", ""),
+                        "hourly_cost": hourly,
+                        "monthly_cost": round(hourly * 730, 2),
+                    },
                 })
         return eips
 
     async def _scan_load_balancers(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
         lbs = []
+        lb_pricing = {
+            "application": 0.0225,
+            "network": 0.0225,
+            "gateway": 0.0225,
+        }
         async with session.client("elbv2", region_name=region) as elbv2:
             paginator = elbv2.get_paginator("describe_load_balancers")
             async for page in paginator.paginate():
                 for lb in page["LoadBalancers"]:
+                    lb_type = lb["Type"]
+                    hourly = lb_pricing.get(lb_type, 0.0225)
                     lbs.append({
                         "type": "lb",
                         "resource_id": lb["LoadBalancerArn"],
@@ -277,7 +308,11 @@ class AwsResourceScanner:
                         "state": lb["State"]["Code"],
                         "scheme": lb["Scheme"],
                         "tags": {},
-                        "specs": {"type": lb["Type"]},
+                        "specs": {
+                            "type": lb_type,
+                            "hourly_cost": hourly,
+                            "monthly_cost": round(hourly * 730, 2),
+                        },
                     })
         return lbs
 
@@ -389,6 +424,7 @@ class AwsResourceScanner:
                     retention = lg.get("retentionInDays")
                     name = lg.get("logGroupName", "")
                     stored_gb = lg.get("storedBytes", 0) / (1024 ** 3)
+                    monthly = round(stored_gb * 0.03, 2)
                     log_groups.append({
                         "type": "cloudwatch_log_group",
                         "resource_id": name,
@@ -400,8 +436,8 @@ class AwsResourceScanner:
                         "tags": lg.get("tags", {}),
                         "specs": {
                             "retention_days": retention,
-                            "hourly_cost": None,
-                            "monthly_cost": round(stored_gb * 0.03, 2) if not retention else None,
+                            "hourly_cost": round(monthly / 730, 6),
+                            "monthly_cost": monthly,
                         },
                     })
         return log_groups
