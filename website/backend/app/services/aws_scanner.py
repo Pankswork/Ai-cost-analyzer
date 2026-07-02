@@ -17,6 +17,11 @@ class AwsResourceScanner:
         resources.extend(await self._scan_ebs(session, region))
         resources.extend(await self._scan_eips(session, region))
         resources.extend(await self._scan_load_balancers(session, region))
+        resources.extend(await self._scan_nat_gateways(session, region))
+        resources.extend(await self._scan_eks_clusters(session, region))
+        resources.extend(await self._scan_ebs_snapshots(session, region))
+        resources.extend(await self._scan_s3_buckets(session, region))
+        resources.extend(await self._scan_cloudwatch_log_groups(session, region))
         return resources
 
     async def _fetch_ec2_pricing(
@@ -252,6 +257,131 @@ class AwsResourceScanner:
                         "specs": {"type": lb["Type"]},
                     })
         return lbs
+
+    async def _scan_nat_gateways(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
+        gateways = []
+        hourly_cost = 0.045
+        async with session.client("ec2", region_name=region) as ec2:
+            paginator = ec2.get_paginator("describe_nat_gateways")
+            async for page in paginator.paginate():
+                for ngw in page["NatGateways"]:
+                    gateways.append({
+                        "type": "nat_gateway",
+                        "resource_id": ngw["NatGatewayId"],
+                        "name": self._get_tag(ngw, "Name") or ngw["NatGatewayId"],
+                        "region": region,
+                        "state": ngw["State"],
+                        "tags": {t["Key"]: t["Value"] for t in ngw.get("Tags", [])},
+                        "specs": {
+                            "connectivity_type": ngw.get("ConnectivityType", "public"),
+                            "hourly_cost": hourly_cost,
+                            "monthly_cost": round(hourly_cost * 730, 2),
+                        },
+                    })
+        return gateways
+
+    async def _scan_eks_clusters(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
+        clusters = []
+        hourly_cost = 0.10
+        async with session.client("eks", region_name=region) as eks:
+            paginator = eks.get_paginator("list_clusters")
+            async for page in paginator.paginate():
+                for cluster_name in page["clusters"]:
+                    cluster = await eks.describe_cluster(name=cluster_name)
+                    c = cluster["cluster"]
+                    clusters.append({
+                        "type": "eks",
+                        "resource_id": cluster_name,
+                        "name": cluster_name,
+                        "region": region,
+                        "state": c["status"],
+                        "version": c["version"],
+                        "endpoint": c.get("endpoint", ""),
+                        "tags": c.get("tags", {}),
+                        "specs": {
+                            "node_groups": len(c.get("resourcesVpcConfig", {}).get("securityGroupIds", [])),
+                            "hourly_cost": hourly_cost,
+                            "monthly_cost": round(hourly_cost * 730, 2),
+                        },
+                    })
+        return clusters
+
+    async def _scan_ebs_snapshots(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
+        snapshots = []
+        async with session.client("ec2", region_name=region) as ec2:
+            paginator = ec2.get_paginator("describe_snapshots")
+            async for page in paginator.paginate(OwnerIds=["self"]):
+                for snap in page["Snapshots"]:
+                    age_days = (datetime.now(timezone.utc) - snap["StartTime"]).days
+                    snapshots.append({
+                        "type": "ebs_snapshot",
+                        "resource_id": snap["SnapshotId"],
+                        "name": self._get_tag(snap, "Name") or snap["SnapshotId"],
+                        "region": region,
+                        "state": snap["State"],
+                        "volume_id": snap.get("VolumeId", ""),
+                        "size_gb": snap["VolumeSize"],
+                        "created": snap["StartTime"].isoformat(),
+                        "age_days": age_days,
+                        "tags": {t["Key"]: t["Value"] for t in snap.get("Tags", [])},
+                        "specs": {
+                            "hourly_cost": None,
+                            "monthly_cost": round(snap["VolumeSize"] * 0.05, 2),
+                        },
+                    })
+        return snapshots
+
+    async def _scan_s3_buckets(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
+        buckets = []
+        async with session.client("s3", region_name="us-east-1") as s3:
+            response = await s3.list_buckets()
+            for bucket in response.get("Buckets", []):
+                bucket_region = "us-east-1"
+                try:
+                    loc = await s3.get_bucket_location(Bucket=bucket["Name"])
+                    bucket_region = loc.get("LocationConstraint") or "us-east-1"
+                except Exception:
+                    pass
+                buckets.append({
+                    "type": "s3",
+                    "resource_id": bucket["Name"],
+                    "name": bucket["Name"],
+                    "region": bucket_region,
+                    "state": "available",
+                    "created": bucket["CreationDate"].isoformat(),
+                    "tags": {},
+                    "specs": {
+                        "hourly_cost": None,
+                        "monthly_cost": None,
+                    },
+                })
+        return buckets
+
+    async def _scan_cloudwatch_log_groups(self, session: aioboto3.Session, region: str) -> List[Dict[str, Any]]:
+        log_groups = []
+        async with session.client("logs", region_name=region) as logs:
+            paginator = logs.get_paginator("describe_log_groups")
+            async for page in paginator.paginate():
+                for lg in page.get("logGroups", []):
+                    retention = lg.get("retentionInDays")
+                    name = lg.get("logGroupName", "")
+                    stored_gb = lg.get("storedBytes", 0) / (1024 ** 3)
+                    log_groups.append({
+                        "type": "cloudwatch_log_group",
+                        "resource_id": name,
+                        "name": name,
+                        "region": region,
+                        "state": "exists",
+                        "retention_days": retention,
+                        "stored_gb": round(stored_gb, 4),
+                        "tags": lg.get("tags", {}),
+                        "specs": {
+                            "retention_days": retention,
+                            "hourly_cost": None,
+                            "monthly_cost": round(stored_gb * 0.03, 2) if not retention else None,
+                        },
+                    })
+        return log_groups
 
     def _get_tag(self, resource: Dict, key: str) -> Optional[str]:
         for tag in resource.get("Tags", []):
