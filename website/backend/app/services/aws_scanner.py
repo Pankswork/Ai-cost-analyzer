@@ -2,7 +2,10 @@ import aioboto3
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional
 from app.config import settings
-from app.services.terraform_discovery import get_active_scanner_methods
+from app.services.terraform_discovery import (
+    is_terraform_managed,
+    get_terraform_resource_types,
+)
 
 ALL_SCANNER_METHODS = [
     "_scan_ec2",
@@ -25,15 +28,16 @@ class AwsResourceScanner:
     async def scan_resources(self, region: Optional[str] = None) -> List[Dict[str, Any]]:
         region = region or self.region
         session = aioboto3.Session()
-        active = get_active_scanner_methods()
-        if active:
-            methods = [m for m in ALL_SCANNER_METHODS if m in active]
-        else:
-            methods = ALL_SCANNER_METHODS
         resources = []
-        for method_name in methods:
+        for method_name in ALL_SCANNER_METHODS:
             method = getattr(self, method_name)
-            resources.extend(await method(session, region))
+            scanned = await method(session, region)
+            terraform_managed = is_terraform_managed(method_name)
+            tf_resource_types = get_terraform_resource_types(method_name)
+            for r in scanned:
+                r["terraform_managed"] = terraform_managed
+                r["terraform_resource_types"] = tf_resource_types
+            resources.extend(scanned)
         return resources
 
     async def _fetch_ec2_pricing(
