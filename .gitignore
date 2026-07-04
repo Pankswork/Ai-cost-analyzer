@@ -52,3 +52,14 @@ website/backend/.dockerignore
 # Terraform state at root level
 *.tfstate
 *.tfstate.*
+
+# Editor / agent config
+opencode.json
+skills-lock.json
+.agents/
+
+# Accidental files
+website/public/I have initialized*
+
+# Cloudflare Workers (not used in this deployment)
+wrangler.jsonc

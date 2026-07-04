@@ -1,6 +1,6 @@
 # AI Cloud Cost Detective
 
-A full-stack DevOps project: scan AWS resources and get AI-powered cost optimization recommendations.
+A full-stack DevOps project: scan AWS resources and get AI-powered cost optimization recommendations — hosted at [bestfreeaifor.com](https://bestfreeaifor.com).
 
 ## Architecture
 
@@ -20,26 +20,29 @@ GitHub Repo (source of truth)
 
 | Layer | Technology |
 |---|---|
-| **Backend** | FastAPI (Python 3.12) — REST + WebSocket |
-| **Frontend** | React 19 + TypeScript + Tailwind CSS |
+| **Frontend** | Astro 6 + TypeScript + TailwindCSS 4 |
+| **Backend** | FastAPI (Python 3.12) — REST API |
 | **AI** | opencode Zen API (cloud LLM) — no local model needed |
-| **Database** | RDS PostgreSQL 16 |
+| **Database** | RDS PostgreSQL 16.14 |
 | **Infrastructure** | Terraform (VPC, EKS, RDS, ArgoCD) |
 | **Container** | Docker (multi-stage builds) |
-| **Orchestration** | EKS (Kubernetes 1.30) |
+| **Orchestration** | EKS (Kubernetes 1.36) |
 | **GitOps** | ArgoCD (App of Apps pattern) |
 | **CI/CD** | GitHub Actions |
 | **Monitoring** | Prometheus + Grafana |
 | **Registry** | ECR (primary) + DockerHub (public) |
+| **AWS Lambda** | Log anomaly detection + JWT secret rotation |
 
 ## Project Structure
 
 ```
-├── backend/          # FastAPI application
-├── frontend/         # React application
+├── website/          # Full application
+│   ├── backend/      #   FastAPI app (app/main.py)
+│   └── src/          #   Astro frontend (pages, components, styles)
 ├── terraform/        # Infrastructure as Code
 ├── k8s/              # Kubernetes manifests
 ├── gitops/           # ArgoCD Application configs
+├── lambda/           # AWS Lambda functions
 ├── .github/          # GitHub Actions workflows
 ├── scripts/          # Bootstrap & cleanup scripts
 └── tests/            # Load tests (Locust)
@@ -48,7 +51,7 @@ GitHub Repo (source of truth)
 ## Prerequisites
 
 - AWS account with admin permissions
-- Terraform 1.9+
+- Terraform 1.11+
 - Docker
 - kubectl
 - Node.js 22+
@@ -80,28 +83,59 @@ Push to the `main` branch. GitHub Actions will:
 
 ## Local Development
 
-### Backend
+### Quick start (Docker Compose)
 
 ```bash
-cd backend
+cd website
+docker compose up --build
+```
+
+Starts PostgreSQL, backend (FastAPI on `:8000`), and frontend (Nginx on `:80`).
+
+### Backend (manual)
+
+```bash
+cd website/backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend
+API at `http://localhost:8000` — Swagger docs at `http://localhost:8000/docs`.
+
+### Frontend (manual)
 
 ```bash
-cd frontend
+cd website
 npm install
 npm run dev
 ```
 
+Astro dev server starts on `:4321` and proxies `/api` to the backend at `:8000`.
+
+### Database (standalone)
+
+```bash
+docker run -d --name pg \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=bestfreeaifor \
+  -p 5432:5432 \
+  postgres:16-alpine
+```
+
+### Seed data
+
+```bash
+cd website/backend
+python seed_data.py
+```
+
 ## Monitoring
 
-- **Grafana**: https://monitoring.bestfreeaifor.com
-- **Prometheus**: Scrapes metrics from the backend every 15s
+- **Prometheus** scrapes metrics from the backend every 15s
+- **Grafana** dashboards via kube-prometheus-stack
 - **Logs**: Structured JSON logged to stdout (Loki/CloudWatch)
 
 ## Security
@@ -112,6 +146,7 @@ npm run dev
 - Containers run as non-root with read-only filesystems
 - Secrets in AWS Secrets Manager (not in Git)
 - ALB terminates HTTPS with ACM certificate
+- WAF Web ACL (rate limiting, SQLi/XSS prevention)
 - Dropped all kernel capabilities in containers
 
 ## Cost Breakdown
@@ -125,6 +160,3 @@ npm run dev
 | **Total** | **~$92/month** |
 
 *With $130 AWS credit, you can run the full stack for ~15 days.*
-
-
-# end
