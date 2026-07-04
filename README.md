@@ -1,6 +1,6 @@
 # AI Cloud Cost Detective
 
-A full-stack DevOps project: scan AWS resources and get AI-powered cost optimization recommendations — hosted at [bestfreeaifor.com](https://bestfreeaifor.com).
+A full-stack DevOps project: scan AWS resources and get AI-powered cost optimization recommendations.
 
 ## Architecture
 
