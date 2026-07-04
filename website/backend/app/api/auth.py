@@ -6,6 +6,7 @@ from app.models.user import User
 from app.models.pydantic_models import UserCreate, UserLogin, TokenResponse, UserResponse
 from app.services.auth_service import hash_password, verify_password, create_token
 from app.middleware.auth_middleware import get_current_user
+from app.config import settings
 
 router = APIRouter(tags=["auth"])
 
