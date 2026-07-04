@@ -127,10 +127,15 @@ docker run -d --name pg \
 
 ### Seed data
 
+The backend auto-seeds admin users on first startup. To also load the AI tools catalog into the database:
+
 ```bash
 cd website/backend
+source .venv/bin/activate
 python seed_data.py
 ```
+
+Requires PostgreSQL to be running (via Docker Compose or standalone), venv activated, and `website/src/data/tools.ts` present.
 
 ## Monitoring
 
