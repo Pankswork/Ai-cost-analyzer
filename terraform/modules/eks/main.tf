@@ -101,8 +101,10 @@ module "eks" {
       before_compute = true
     }
     aws-ebs-csi-driver = {
-      most_recent    = true
-      before_compute = true
+      most_recent            = true
+      before_compute         = true
+      service_account_role_arn = aws_iam_role.ebs_csi.arn
+      resolve_conflicts_on_create = "OVERWRITE"
     }
   }
 
@@ -358,6 +360,39 @@ resource "aws_iam_role" "external_secrets" {
       }
     ]
   })
+}
+
+# ─── IAM Role for EBS CSI Driver (IRSA) ────────────────────────────
+#
+# The EBS CSI driver needs IAM permissions to call EC2 APIs
+# (CreateVolume, AttachVolume, DeleteVolume, etc.) to provision
+# persistent volumes on the cluster's behalf.
+
+resource "aws_iam_role" "ebs_csi" {
+  name = "cost-detective-${var.environment}-ebs-csi"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = module.eks.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${module.eks.oidc_provider}:sub" : "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi" {
+  role       = aws_iam_role.ebs_csi.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicyV2"
 }
 
 resource "aws_iam_role_policy" "external_secrets" {
