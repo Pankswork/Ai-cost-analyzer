@@ -31,6 +31,10 @@ spec:
         runAsUser: 1001
         fsGroup: 1001
 
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
       containers:
         - name: backend
           image: 052301220733.dkr.ecr.us-east-1.amazonaws.com/backend:3e73a9c0300f80243ee848f0bbc5f1ad3dd27965
@@ -53,6 +57,11 @@ spec:
                 name: backend-config
             - secretRef:
                 name: backend-secrets
+
+          # Temp directory for OpenTelemetry SDK (gRPC certs, caches)
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
 
           # Container security context — read-only filesystem
           securityContext:

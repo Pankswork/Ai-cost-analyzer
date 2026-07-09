@@ -9,12 +9,17 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const token = getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const response = await fetch(`${API_BASE}${url}`, { ...options, headers });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-    throw new Error(error.detail || 'Request failed');
+  try {
+    const response = await fetch(`${API_BASE}${url}`, { ...options, headers });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Request failed' }));
+      throw new Error(error.detail || 'Request failed');
+    }
+    return response.json();
+  } catch (err) {
+    console.error(`API ${options?.method || 'GET'} ${url} failed:`, err);
+    throw err;
   }
-  return response.json();
 }
 
 export const api = {

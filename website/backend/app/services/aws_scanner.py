@@ -1,14 +1,34 @@
-import logging
+import time
+import structlog
 import aioboto3
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional
+from opentelemetry import trace
+from opentelemetry.metrics import Counter, Histogram
 from app.config import settings
+from app.core.telemetry import get_tracer, get_meter
 from app.services.terraform_discovery import (
     is_terraform_managed,
     get_terraform_resource_types,
 )
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
+
+_tracer = get_tracer()
+_meter = get_meter()
+scans_counter: Counter = _meter.create_counter(
+    "scans_initiated_total",
+    description="Total number of AWS resource scans initiated",
+)
+resources_counter: Counter = _meter.create_counter(
+    "resources_scanned_total",
+    description="Total number of resources found per type",
+)
+scan_duration: Histogram = _meter.create_histogram(
+    "scan_duration_seconds",
+    description="Duration of each scan method",
+    unit="s",
+)
 
 ALL_SCANNER_METHODS = [
     "_scan_ec2",
@@ -32,19 +52,35 @@ class AwsResourceScanner:
         region = region or self.region
         session = aioboto3.Session()
         resources = []
+
+        scans_counter.add(1, {"region": region})
+
         for method_name in ALL_SCANNER_METHODS:
             method = getattr(self, method_name)
-            try:
-                scanned = await method(session, region)
-            except Exception as e:
-                logger.warning("Scanner %s failed: %s", method_name, e)
-                continue
-            terraform_managed = is_terraform_managed(method_name)
-            tf_resource_types = get_terraform_resource_types(method_name)
-            for r in scanned:
-                r["terraform_managed"] = terraform_managed
-                r["terraform_resource_types"] = tf_resource_types
-            resources.extend(scanned)
+            resource_type = method_name.replace("_scan_", "")
+            start = time.monotonic()
+            with _tracer.start_as_current_span(method_name) as span:
+                span.set_attribute("region", region)
+                try:
+                    scanned = await method(session, region)
+                    span.set_attribute("resources_found", len(scanned))
+                except Exception as e:
+                    logger.warning("scanner_failed", method=method_name, region=region, error=str(e))
+                    span.record_exception(e)
+                    span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+                    continue
+                terraform_managed = is_terraform_managed(method_name)
+                tf_resource_types = get_terraform_resource_types(method_name)
+                for r in scanned:
+                    r["terraform_managed"] = terraform_managed
+                    r["terraform_resource_types"] = tf_resource_types
+                resources.extend(scanned)
+                resources_counter.add(len(scanned), {"resource_type": resource_type})
+                scan_duration.record(
+                    time.monotonic() - start,
+                    {"resource_type": resource_type},
+                )
+
         return resources
 
     async def _fetch_ec2_pricing(

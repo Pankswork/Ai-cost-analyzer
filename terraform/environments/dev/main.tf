@@ -143,6 +143,165 @@ resource "helm_release" "kube_prometheus_stack" {
       adminPassword: admin
       service:
         type: ClusterIP
+      additionalDataSources:
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://loki:3100
+          isDefault: false
+        - name: Tempo
+          type: tempo
+          access: proxy
+          url: http://tempo:3100
+          isDefault: false
+      dashboardProviders:
+        dashboardproviders.yaml:
+          apiVersion: 1
+          providers:
+            - name: default
+              orgId: 1
+              folder: ""
+              type: file
+              disableDeletion: false
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/default
+      dashboards:
+        default:
+          application-overview:
+            gnetId: null
+            revision: 1
+            datasource: Prometheus
+            json: |
+              {
+                "title": "Application Overview",
+                "uid": "app-overview",
+                "version": 1,
+                "panels": [
+                  {
+                    "title": "Request Rate",
+                    "type": "graph",
+                    "gridPos": {"x": 0, "y": 0, "w": 8, "h": 8},
+                    "targets": [{
+                      "expr": "rate(http_requests_total{job='backend'}[5m])",
+                      "legendFormat": "{{status_code}}"
+                    }]
+                  },
+                  {
+                    "title": "P99 Latency",
+                    "type": "graph",
+                    "gridPos": {"x": 8, "y": 0, "w": 8, "h": 8},
+                    "targets": [{
+                      "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job='backend'}[5m]))",
+                      "legendFormat": "{{method}} {{route}}"
+                    }]
+                  },
+                  {
+                    "title": "Error Rate",
+                    "type": "graph",
+                    "gridPos": {"x": 16, "y": 0, "w": 8, "h": 8},
+                    "targets": [{
+                      "expr": "rate(http_requests_total{job='backend',status_code=~'5..'}[5m]) / rate(http_requests_total{job='backend'}[5m])",
+                      "legendFormat": "error ratio"
+                    }]
+                  },
+                  {
+                    "title": "Active Scans",
+                    "type": "stat",
+                    "gridPos": {"x": 0, "y": 8, "w": 4, "h": 4},
+                    "targets": [{
+                      "expr": "increase(scans_initiated_total[24h])"
+                    }]
+                  },
+                  {
+                    "title": "Savings Found",
+                    "type": "stat",
+                    "gridPos": {"x": 4, "y": 8, "w": 4, "h": 4},
+                    "targets": [{
+                      "expr": "sum(increase(savings_found_total[24h]))"
+                    }]
+                  },
+                  {
+                    "title": "Pod CPU Usage",
+                    "type": "graph",
+                    "gridPos": {"x": 8, "y": 8, "w": 8, "h": 8},
+                    "targets": [{
+                      "expr": "sum(rate(container_cpu_usage_seconds_total{namespace='cost-detective',pod=~'backend-.*'}[5m])) by (pod)",
+                      "legendFormat": "{{pod}}"
+                    }]
+                  }
+                ]
+              }
+          business-metrics:
+            gnetId: null
+            revision: 1
+            datasource: Prometheus
+            json: |
+              {
+                "title": "Business Metrics",
+                "uid": "business-metrics",
+                "version": 1,
+                "panels": [
+                  {
+                    "title": "Scans per Day",
+                    "type": "bargauge",
+                    "gridPos": {"x": 0, "y": 0, "w": 6, "h": 6},
+                    "targets": [{
+                      "expr": "increase(scans_initiated_total[24h])"
+                    }]
+                  },
+                  {
+                    "title": "AI Analysis Duration (p95)",
+                    "type": "graph",
+                    "gridPos": {"x": 6, "y": 0, "w": 6, "h": 6},
+                    "targets": [{
+                      "expr": "histogram_quantile(0.95, rate(analysis_duration_seconds_bucket[5m]))",
+                      "legendFormat": "p95"
+                    }]
+                  },
+                  {
+                    "title": "Resources Scanned by Type",
+                    "type": "piechart",
+                    "gridPos": {"x": 12, "y": 0, "w": 6, "h": 6},
+                    "targets": [{
+                      "expr": "sum(resources_scanned_total) by (resource_type)",
+                      "legendFormat": "{{resource_type}}"
+                    }]
+                  },
+                  {
+                    "title": "Recommendations Generated",
+                    "type": "stat",
+                    "gridPos": {"x": 18, "y": 0, "w": 6, "h": 6},
+                    "targets": [{
+                      "expr": "increase(recommendations_generated_total[24h])"
+                    }]
+                  }
+                ]
+              }
+          tracing:
+            gnetId: null
+            revision: 1
+            datasource: Tempo
+            json: |
+              {
+                "title": "Tracing",
+                "uid": "tracing",
+                "version": 1,
+                "panels": [
+                  {
+                    "title": "Trace Search",
+                    "type": "tempo",
+                    "gridPos": {"x": 0, "y": 0, "w": 24, "h": 12},
+                    "datasource": "Tempo"
+                  },
+                  {
+                    "title": "Service Graph",
+                    "type": "tempo-service-graph",
+                    "gridPos": {"x": 0, "y": 12, "w": 24, "h": 12},
+                    "datasource": "Tempo"
+                  }
+                ]
+              }
     prometheus:
       prometheusSpec:
         retention: 7d
@@ -150,10 +309,228 @@ resource "helm_release" "kube_prometheus_stack" {
           requests:
             cpu: "500m"
             memory: "2Gi"
+        ruleSelectorNilUsesHelmValues: false
+        serviceMonitorSelectorNilUsesHelmValues: false
+    alertmanager:
+      config:
+        global:
+          slack_api_url: "${var.slack_webhook_url}"
+        route:
+          receiver: default
+          repeatInterval: 4h
+          routes:
+            - match:
+                severity: critical
+              receiver: critical
+              repeatInterval: 1h
+        receivers:
+          - name: default
+            slack_configs:
+              - channel: "#alerts"
+                title: "{{ .GroupLabels.alertname }}"
+                text: "{{ .CommonAnnotations.summary }}"
+          - name: critical
+            slack_configs:
+              - channel: "#alerts-critical"
+                title: "[CRITICAL] {{ .GroupLabels.alertname }}"
+                text: "{{ .CommonAnnotations.summary }}"
     YAML
   ]
 
   depends_on = [module.eks]
+}
+
+# ─── Tempo (Distributed Tracing) ──────────────────────────────────
+resource "helm_release" "tempo" {
+  name       = "tempo"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "tempo"
+  version    = "1.10.3"
+  namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
+
+  values = [
+    <<-YAML
+    tempo:
+      retention: 168h
+      storage:
+        trace:
+          backend: local
+          local:
+            path: /var/tempo/traces
+          wal:
+            path: /var/tempo/wal
+    ingester:
+      trace_idle_period: 10s
+      max_block_duration: 5m
+    querier:
+      frontend_worker:
+        frontend_address: tempo-tempo-query-frontend:9095
+    metricsGenerator:
+      enabled: true
+    storage:
+      trace:
+        backend: local
+    compactor:
+      compaction:
+        block_retention: 168h
+    persistence:
+      enabled: true
+      size: 5Gi
+    serviceAccount:
+      create: true
+    YAML
+  ]
+
+  depends_on = [module.eks]
+}
+
+# ─── OpenTelemetry Collector (Gateway) ────────────────────────────
+resource "helm_release" "otel_collector" {
+  name       = "otel-collector"
+  repository = "https://open-telemetry.github.io/opentelemetry-helm-charts"
+  chart      = "opentelemetry-collector"
+  version    = "0.105.0"
+  namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
+
+  values = [
+    <<-YAML
+    mode: deployment
+    replicaCount: 1
+    image:
+      repository: otel/opentelemetry-collector-contrib
+      tag: 0.112.0
+    config:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+      processors:
+        batch:
+          timeout: 1s
+          send_batch_size: 1024
+        memory_limiter:
+          check_interval: 5s
+          limit_mib: 512
+          spike_limit_mib: 128
+      exporters:
+        otlp/tempo:
+          endpoint: tempo:4317
+          tls:
+            insecure: true
+        prometheus:
+          endpoint: 0.0.0.0:8889
+          resource_to_telemetry_conversion:
+            enabled: true
+        loki:
+          endpoint: http://loki:3100/loki/api/v1/push
+          tls:
+            insecure: true
+      service:
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [memory_limiter, batch]
+            exporters: [otlp/tempo]
+          metrics:
+            receivers: [otlp]
+            processors: [memory_limiter, batch]
+            exporters: [prometheus]
+          logs:
+            receivers: [otlp]
+            processors: [memory_limiter, batch]
+            exporters: [loki]
+    service:
+      enabled: true
+      type: ClusterIP
+      ports:
+        - name: otlp-grpc
+          port: 4317
+          targetPort: 4317
+          protocol: TCP
+        - name: otlp-http
+          port: 4318
+          targetPort: 4318
+          protocol: TCP
+        - name: prometheus
+          port: 8889
+          targetPort: 8889
+          protocol: TCP
+    serviceMonitor:
+      enabled: true
+      endpoints:
+        - port: prometheus
+          interval: 15s
+          path: /metrics
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    YAML
+  ]
+
+  depends_on = [helm_release.tempo, helm_release.loki, module.eks]
+}
+
+# ─── Loki (Log Aggregation) ────────────────────────────────────────
+resource "helm_release" "loki" {
+  name       = "loki"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "loki"
+  version    = "6.27.0"
+  namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
+
+  values = [
+    <<-YAML
+    loki:
+      commonConfig:
+        replication_factor: 1
+      storage:
+        type: filesystem
+      schemaConfig:
+        configs:
+          - from: 2024-01-01
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: loki_index_
+              period: 24h
+    singleBinary:
+      replicas: 1
+      persistence:
+        enabled: true
+        size: 10Gi
+    gateway:
+      enabled: false
+    YAML
+  ]
+
+  depends_on = [module.eks]
+}
+
+# ─── Promtail (Log Agent DaemonSet) ────────────────────────────────
+resource "helm_release" "promtail" {
+  name       = "promtail"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "promtail"
+  version    = "6.16.5"
+  namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
+
+  values = [
+    <<-YAML
+    config:
+      clients:
+        - url: http://loki:3100/loki/api/v1/push
+    YAML
+  ]
+
+  depends_on = [helm_release.loki, module.eks]
 }
 
 # ─── Networking Layer ──────────────────────────────────────────────
@@ -333,6 +710,7 @@ resource "aws_secretsmanager_secret_version" "backend" {
     zen_api_key    = var.zen_api_key
     admin_api_key  = random_password.admin_api_key.result
     admin_emails   = var.admin_emails
+    sentry_dsn     = ""
   })
 
   depends_on = [module.rds]

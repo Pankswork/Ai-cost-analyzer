@@ -1,11 +1,27 @@
+import time
 import json
-import logging
 from datetime import date
 import httpx
 from typing import List, Dict, Any
+from opentelemetry import trace
+from opentelemetry.metrics import Counter, Histogram
 from app.config import settings
+from app.core.telemetry import get_tracer, get_meter
+import structlog
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
+
+_tracer = get_tracer()
+_meter = get_meter()
+recommendations_counter: Counter = _meter.create_counter(
+    "recommendations_generated_total",
+    description="Total number of cost optimization recommendations generated",
+)
+analysis_duration: Histogram = _meter.create_histogram(
+    "analysis_duration_seconds",
+    description="Duration of AI analysis calls",
+    unit="s",
+)
 
 ZEN_API_URL = "https://opencode.ai/zen/v1/chat/completions"
 
@@ -48,50 +64,68 @@ class AiAnalyzer:
                 "ZEN_API_KEY is not configured — set APP_ZEN_API_KEY environment variable"
             )
 
-        today = date.today()
-        resource_text = (
-            f"Today's date: {today.isoformat()}\n"
-            f"IMPORTANT: Use current AWS pricing and instance types available as of {today.isoformat()}.\n"
-            f"Do NOT use outdated pricing — if a price looks wrong, use today's AWS public pricing.\n\n"
-            f"AWS Resources to analyze:\n{json.dumps(resources, indent=2)}"
-        )
-        try:
-            response = await self.client.post(
-                ZEN_API_URL,
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": self.model,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": resource_text},
-                    ],
-                    "temperature": 0.1,
-                    "max_tokens": 32768,
-                },
-            )
-            response.raise_for_status()
-            raw_body = response.text
-            logger.info(f"ZEN API response: status={response.status_code}, body_len={len(raw_body)}, body_preview={raw_body[:200]}")
-            if not raw_body.strip():
-                raise RuntimeError("ZEN API returned empty response body")
-            data = response.json()
-            message = data["choices"][0]["message"]
-            content = message.get("content") or message.get("reasoning_content", "")
+        start = time.monotonic()
+        with _tracer.start_as_current_span("ai_analyze") as span:
+            span.set_attribute("resource_count", len(resources))
 
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0].strip()
+            today = date.today()
+            resource_text = (
+                f"Today's date: {today.isoformat()}\n"
+                f"IMPORTANT: Use current AWS pricing and instance types available as of {today.isoformat()}.\n"
+                f"Do NOT use outdated pricing — if a price looks wrong, use today's AWS public pricing.\n\n"
+                f"AWS Resources to analyze:\n{json.dumps(resources, indent=2)}"
+            )
+            span.set_attribute("prompt_length", len(resource_text))
 
-            return json.loads(content)
-        except httpx.HTTPStatusError as e:
-            raise RuntimeError(
-                f"ZEN API returned {e.response.status_code}: {e.response.text[:500]}"
-            )
-        except (json.JSONDecodeError, KeyError, IndexError) as e:
-            raise RuntimeError(
-                f"ZEN API returned an unexpected response format: {e}"
-            )
+            try:
+                response = await self.client.post(
+                    ZEN_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": self.model,
+                        "messages": [
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": resource_text},
+                        ],
+                        "temperature": 0.1,
+                        "max_tokens": 32768,
+                    },
+                )
+                response.raise_for_status()
+                raw_body = response.text
+                logger.info(
+                    "zen_api_response",
+                    status_code=response.status_code,
+                    body_length=len(raw_body),
+                )
+                if not raw_body.strip():
+                    raise RuntimeError("ZEN API returned empty response body")
+                data = response.json()
+                message = data["choices"][0]["message"]
+                content = message.get("content") or message.get("reasoning_content", "")
+
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+
+                recommendations = json.loads(content)
+                span.set_attribute("recommendation_count", len(recommendations))
+                recommendations_counter.add(len(recommendations))
+                analysis_duration.record(time.monotonic() - start)
+                return recommendations
+            except httpx.HTTPStatusError as e:
+                span.record_exception(e)
+                span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+                raise RuntimeError(
+                    f"ZEN API returned {e.response.status_code}: {e.response.text[:500]}"
+                )
+            except (json.JSONDecodeError, KeyError, IndexError) as e:
+                span.record_exception(e)
+                span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+                raise RuntimeError(
+                    f"ZEN API returned an unexpected response format: {e}"
+                )

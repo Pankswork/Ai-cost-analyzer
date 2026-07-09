@@ -110,6 +110,14 @@ const defaultKeywords = 'best free ai for, best free ai tools 2026, free ai tool
         }
       })();
     </script>
+    <script is:inline>
+      window.addEventListener("error", function (e) {
+        console.error("Uncaught error:", e.error || e.message);
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        console.error("Unhandled promise rejection:", e.reason);
+      });
+    </script>
   </head>
   <body class="bg-canvas-soft font-sans text-ink antialiased">
     <slot />

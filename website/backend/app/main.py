@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from app.core.telemetry import init_telemetry, instrument_fastapi, instrument_httpx, instrument_sqlalchemy
 from app.db.session import engine, async_session, Base
 from app.db.seeder import seed_database
 from app.api import health, auth, tools, submissions, reviews, favorites, misc, analysis
@@ -12,6 +13,9 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    init_telemetry()
+    instrument_httpx()
+    instrument_sqlalchemy(engine.sync_engine)
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
@@ -44,6 +48,8 @@ app.add_middleware(
 )
 
 Instrumentator().instrument(app).expose(app)
+
+instrument_fastapi(app)
 
 app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     zen_model: str = "zen-1"
     environment: str = "development"
     site_url: str = "https://bestfreeaifor.com"
+    sentry_dsn: str = ""
     slack_webhook_url: str = ""
     ses_from_email: str = "noreply@bestfreeaifor.com"
     admin_api_key: str = ""
