@@ -508,6 +508,12 @@ resource "helm_release" "loki" {
       persistence:
         enabled: true
         size: 10Gi
+    backend:
+      replicas: 0
+    read:
+      replicas: 0
+    write:
+      replicas: 0
     gateway:
       enabled: false
     YAML
