@@ -376,7 +376,7 @@ resource "helm_release" "tempo" {
         block_retention: 168h
     persistence:
       enabled: true
-      storageClass: gp2
+      storageClassName: gp2
       size: 5Gi
     serviceAccount:
       create: true
