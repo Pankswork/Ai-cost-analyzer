@@ -447,19 +447,22 @@ resource "helm_release" "otel_collector" {
     service:
       enabled: true
       type: ClusterIP
-      ports:
-        - name: otlp-grpc
-          port: 4317
-          targetPort: 4317
-          protocol: TCP
-        - name: otlp-http
-          port: 4318
-          targetPort: 4318
-          protocol: TCP
-        - name: prometheus
-          port: 8889
-          targetPort: 8889
-          protocol: TCP
+    ports:
+      otlp:
+        enabled: true
+        containerPort: 4317
+        servicePort: 4317
+        protocol: TCP
+      otlp-http:
+        enabled: true
+        containerPort: 4318
+        servicePort: 4318
+        protocol: TCP
+      prometheus:
+        enabled: true
+        containerPort: 8889
+        servicePort: 8889
+        protocol: TCP
     serviceMonitor:
       enabled: true
       endpoints:
