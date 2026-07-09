@@ -100,6 +100,10 @@ module "eks" {
       most_recent    = true
       before_compute = true
     }
+    aws-ebs-csi-driver = {
+      most_recent    = true
+      before_compute = true
+    }
   }
 
   enable_irsa = true
