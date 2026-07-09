@@ -347,6 +347,7 @@ resource "helm_release" "tempo" {
   chart      = "tempo"
   version    = "1.10.3"
   namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
+  timeout    = 600
 
   values = [
     <<-YAML
@@ -487,6 +488,7 @@ resource "helm_release" "loki" {
 
   values = [
     <<-YAML
+    deploymentMode: SingleBinary
     loki:
       commonConfig:
         replication_factor: 1
