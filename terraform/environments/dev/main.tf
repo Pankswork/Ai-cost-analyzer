@@ -376,6 +376,7 @@ resource "helm_release" "tempo" {
         block_retention: 168h
     persistence:
       enabled: true
+      storageClass: gp2
       size: 5Gi
     serviceAccount:
       create: true
@@ -507,6 +508,7 @@ resource "helm_release" "loki" {
       replicas: 1
       persistence:
         enabled: true
+        storageClass: gp2
         size: 10Gi
     backend:
       replicas: 0
@@ -514,6 +516,10 @@ resource "helm_release" "loki" {
       replicas: 0
     write:
       replicas: 0
+    chunksCache:
+      enabled: false
+    resultsCache:
+      enabled: false
     gateway:
       enabled: false
     YAML
