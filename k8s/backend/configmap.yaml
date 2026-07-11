@@ -12,7 +12,7 @@ data:
   APP_JWT_ALGORITHM: "HS256"
   APP_JWT_EXPIRATION_MINUTES: "60"
   OTEL_SERVICE_NAME: "backend"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.monitoring:4317"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317"
   OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
   OTEL_TRACES_SAMPLER_ARG: "0.1"
   SENTRY_DSN: ""
