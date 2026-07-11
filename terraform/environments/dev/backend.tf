@@ -6,6 +6,7 @@
 # Prerequisites:
 # - S3 bucket: cost-detective-terraform-state (created manually)
 # - DynamoDB table: cost-detective-terraform-locks (created manually)
+# -
 
 terraform {
   backend "s3" {
