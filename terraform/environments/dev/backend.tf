@@ -1,5 +1,6 @@
 # Terraform state backend configuration for dev environment
 #
+#
 # Stores state in S3 for team collaboration and DynamoDB for state locking.
 # This prevents concurrent terraform apply operations from conflicting.
 #

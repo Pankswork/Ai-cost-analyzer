@@ -6,7 +6,7 @@ All pipelines (CI, CD, Terraform) are green. This document captures the prioriti
 
 - [ ] **Write unit/integration tests** — `tests/` has only a locustfile; `pytest` step in CI never runs.
 - [ ] **Add Alembic migrations** — `Base.metadata.create_all` at startup is risky for production schema changes.
-- [ ] **Fix docs vs reality** — README says "React 19", "backend/", "frontend/", "Ollama" — actual stack is Astro, `website/backend/`, `website/`, Zen API.
+- [x] **Fix docs vs reality** — Updated `ai-cost-analysis.md` and created `docs/ai-workflow.md` to match actual Astro/Zen API stack.
 
 ## Priority 2: Operational Completeness
 
