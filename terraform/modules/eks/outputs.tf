@@ -44,3 +44,8 @@ output "external_secrets_role_arn" {
   description = "IAM role ARN for the External Secrets Operator (IRSA)"
   value       = aws_iam_role.external_secrets.arn
 }
+
+output "cluster_autoscaler_role_arn" {
+  description = "IAM role ARN for the Cluster Autoscaler (IRSA)"
+  value       = aws_iam_role.cluster_autoscaler.arn
+}

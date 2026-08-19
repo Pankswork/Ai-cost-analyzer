@@ -118,6 +118,62 @@ resource "helm_release" "external_secrets" {
   depends_on = [module.eks]
 }
 
+# ─── Metrics Server ───────────────────────────────────────────────
+#
+# Serves the Kubernetes resource metrics API (metrics.k8s.io) used by
+# the backend HPA (k8s/backend/hpa.yaml) and `kubectl top`. Prometheus
+# & Grafana scrape metrics but do NOT serve this aggregated API.
+
+resource "helm_release" "metrics_server" {
+  name       = "metrics-server"
+  repository = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart      = "metrics-server"
+  version    = "3.13.1"
+  namespace  = "kube-system"
+
+  depends_on = [module.eks]
+}
+
+# ─── Cluster Autoscaler ───────────────────────────────────────────
+#
+# Scales the `cost-detective` managed node group between min/max when
+# pods cannot be scheduled. The node group carries the
+# `k8s.io/cluster-autoscaler/enabled=true` tag (modules/eks/main.tf)
+# which the chart's ASG auto-discovery matches.
+
+resource "helm_release" "cluster_autoscaler" {
+  name       = "cluster-autoscaler"
+  repository = "https://kubernetes.github.io/autoscaler"
+  chart      = "cluster-autoscaler"
+  version    = "9.59.0"
+  namespace  = "kube-system"
+
+  set = [
+    {
+      name  = "autoDiscovery.clusterName"
+      value = module.eks.cluster_id
+    },
+    {
+      name  = "awsRegion"
+      value = var.aws_region
+    },
+    {
+      name  = "extraArgs.balance-similar-node-groups"
+      value = "true"
+    },
+    {
+      name  = "rbac.serviceAccount.name"
+      value = "cluster-autoscaler"
+    },
+    {
+      name  = "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = module.eks.cluster_autoscaler_role_arn
+    },
+  ]
+
+  depends_on = [module.eks]
+}
+
 # ─── Monitoring Namespace ─────────────────────────────────────────
 resource "kubernetes_namespace_v1" "monitoring" {
   depends_on = [module.eks]

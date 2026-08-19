@@ -35,14 +35,15 @@ module "eks" {
     "scheduler",
   ]
 
-  # Managed node group — single m7i-flex.large (free tier eligible)
+  # Managed node group — dual m7i-flex.large (free tier eligible)
+  # Two nodes give ~58 pod slots so backend/frontend/HPA can schedule
   # In production, separate node groups for system vs. application workloads
   eks_managed_node_groups = {
     cost-detective = {
       create = true
 
-      desired_size = 1
-      min_size     = 1
+      desired_size = 2
+      min_size     = 2
       max_size     = 3
 
       instance_types = ["m7i-flex.large", "c7i-flex.large"]
@@ -298,6 +299,45 @@ resource "aws_iam_role_policy" "alb_controller" {
       }
     ]
   })
+}
+
+# ─── IAM Role for Cluster Autoscaler (IRSA) ──────────────────────
+#
+# Cluster Autoscaler scales the managed node group (cost-detective)
+# when pods cannot be scheduled. The AWS managed policy covers ASG
+# inspection + scaling operations. The `k8s.io/cluster-autoscaler/enabled`
+# tag on the node group triggers ASG auto-discovery.
+
+resource "aws_iam_role" "cluster_autoscaler" {
+  name = "cost-detective-${var.environment}-cluster-autoscaler"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = module.eks.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${module.eks.oidc_provider}:sub" : "system:serviceaccount:kube-system:cluster-autoscaler"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "cost-detective-${var.environment}-cluster-autoscaler"
+    Environment = var.environment
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
+  role       = aws_iam_role.cluster_autoscaler.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAutoscalerPolicy"
 }
 
 # checkov:skip=CKV_AWS_355:Describe actions require * resource — ARNs unknown before discovery
